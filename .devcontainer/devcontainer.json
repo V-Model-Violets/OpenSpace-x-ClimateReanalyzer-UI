@@ -1,0 +1,35 @@
+{
+  "name": "OpenSpace Climate Reanalyzer UI",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:latest",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "javascript.preferences.importModuleSpecifier": "relative",
+        "typescript.preferences.importModuleSpecifier": "relative"
+      },
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-react-refactor",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "ms-vscode.vscode-json",
+        "ms-vscode.live-server"
+      ]
+    }
+  },
+
+  "postCreateCommand": "npm install -g prettier eslint",
+  "forwardPorts": [3000, 3001, 8080]
+}

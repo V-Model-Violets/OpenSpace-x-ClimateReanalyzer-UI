@@ -1,0 +1,90 @@
+name: Validate Commit Message
+on:
+  push: 
+
+jobs:
+  check-commit-types:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history of current ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine Commit Range
+        id: range
+        shell: bash
+        run: |
+            before="${{ github.event.before }}"
+            after="${{ github.sha }}"
+
+            if [[ "$before" =~ ^0+$ ]]; then
+            echo "First push on this ref; checking only new commits on '${GITHUB_REF_NAME}'."
+            git fetch --no-tags --prune --progress origin "+refs/heads/${GITHUB_REF_NAME}:refs/remotes/origin/${GITHUB_REF_NAME}" || true
+            base="$(git rev-parse --verify "origin/${GITHUB_REF_NAME}" 2>/dev/null || echo "")"
+            if [[ -n "$base" ]]; then
+                echo "from=$base" >> "$GITHUB_OUTPUT"
+            else
+                echo "from=${after}^" >> "$GITHUB_OUTPUT"
+            fi
+            echo "to=$after" >> "$GITHUB_OUTPUT"
+            exit 0
+            fi
+
+            if ! git cat-file -e "${before}^{commit}" 2>/dev/null; then
+            echo "Fetching missing 'before' commit $before …"
+            git fetch --no-tags --prune --progress origin "${before}" || true
+            fi
+
+            if ! git cat-file -e "${before}^{commit}" 2>/dev/null; then
+            echo "Unable to find 'before' locally; using merge-base with remote branch."
+            git fetch --no-tags --prune --progress origin "+refs/heads/${GITHUB_REF_NAME}:refs/remotes/origin/${GITHUB_REF_NAME}" || true
+            base="$(git merge-base "origin/${GITHUB_REF_NAME}" "${after}" || echo "")"
+            if [[ -z "$base" ]]; then
+                echo "from=${after}^" >> "$GITHUB_OUTPUT"
+            else
+                echo "from=$base" >> "$GITHUB_OUTPUT"
+            fi
+            echo "to=$after" >> "$GITHUB_OUTPUT"
+            exit 0
+            fi
+
+            echo "from=$before" >> "$GITHUB_OUTPUT"
+            echo "to=$after"   >> "$GITHUB_OUTPUT"
+
+
+      - name: Validate commit types
+        shell: bash
+        run: |
+          FAILED=0
+          VALID_TYPES="feat|fix|chore|refactor|test|docs|ci"
+
+          from='${{ steps.range.outputs.from }}'
+          to='${{ steps.range.outputs.to }}'
+
+          while read -r COMMIT; do
+            MSG=$(git log -1 --format=%s "$COMMIT")
+            if ! echo "$MSG" | grep -Eq "^(${VALID_TYPES})(\(.+\))?!?: .+"; then
+              echo "Invalid commit message:"
+              echo "   $MSG"
+              FAILED=1
+            else
+              echo "✅ $MSG"
+            fi
+          done < <(git rev-list "$from".."$to")
+
+          if [ $FAILED -ne 0 ]; then
+            echo
+            echo "Allowed types: $VALID_TYPES"
+            echo "Format: <type>(optional-scope): short description"
+            echo "Examples:"
+            echo "  feat(api): add new endpoint"
+            echo "  fix: fix sql error on login"
+            echo "  chore: update codeowners"
+            echo "  refactor: simplify loop"
+            echo "  test: add unit tests for user model"
+            echo "  docs: update API documentation"
+            echo "  ci: add continuous integration for testing"
+
+            exit 1
+          fi
