@@ -11,7 +11,7 @@ Commits should be crafted to follow a specific format to allow for readability a
 ```
 <type>: <description>
 
-[optional body]
+#<GitHub-Issue-Number>
 ```
 
 #### Type
