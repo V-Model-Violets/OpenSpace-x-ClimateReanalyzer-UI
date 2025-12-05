@@ -30,3 +30,16 @@ The type in the header must be one of the following:
 ### Atomic Commits
 Commits must be atomic. Here is more: [Atomic Commits](https://en.wikipedia.org/wiki/Atomic_commit). TLDR: "This commit does one thing and one thing only".
 
+## Branches
+Branche names should follow a similar format to the commit messages. 
+
+### Branch Naming Convention
+```
+<type>/<description>
+```
+
+### Example
+If there were a branch, and the goal for that branch is to create a new page, the naming would go something like this:
+```
+feat/add-<page-name>-page
+```
