@@ -1,35 +1,85 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+import finalLogo from "./assets/finalLogo.png";
+import UmaineLogo from "./assets/university_of_maine_logo-freelogovectors.net_-2706234335.png";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
+      <h1
+        style={{
+          color: "white",
+          fontFamily: "Inria Serif",
+          fontSize: "35px",
+          fontWeight: "lighter",
+          verticalAlign: "top",
+        }}
+      >
+        Climate Reanalyzer
+      </h1>
+      <h2
+        style={{
+          color: "white",
+          fontFamily: "Inria Serif",
+          fontSize: "20px",
+          fontWeight: "lighter",
+          marginTop: "-20px",
+          marginBottom: "20px",
+          lineHeight: "23px",
+        }}
+      >
+        Various Global Maps Collected by the Climate Reanalyzer at the
+        Univeristy of Maine
+      </h2>
+      <div className="buttons" style={{ fontFamily: "Inria Serif" }}>
         <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+          Daily Temperature {count}
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        <button onClick={() => setCount((count) => count + 1)}>
+          Precipitation {count}
+        </button>
+        <button onClick={() => setCount((count) => count + 1)}>
+          Sea Surface Temperature {count}
+        </button>
+        <button onClick={() => setCount((count) => count + 1)}>
+          Jetstream {count}
+        </button>
+        <button onClick={() => setCount((count) => count + 1)}>
+          Ice and Snow Coverage {count}
+        </button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "15px",
+          marginTop: "-70px",
+        }}
+      >
+        <img
+          src={finalLogo}
+          alt="V-Model Violets Logo"
+          width="60px"
+          height="60px"
+        />
+        <h2
+          style={{
+            color: "white",
+            fontFamily: "Inria Serif",
+            fontSize: "20px",
+            fontWeight: "lighter",
+            margin: "0",
+          }}
+        >
+          V-Model Violets at UMaine
+        </h2>
+        <img src={UmaineLogo} alt="UMaine Logo" width="70px" height="50px" />
+      </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
