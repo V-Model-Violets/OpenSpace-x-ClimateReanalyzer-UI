@@ -56,7 +56,7 @@ jobs:
         shell: bash
         run: |
           FAILED=0
-          VALID_TYPES="feat|fix|chore|refactor|test|docs|ci"
+          VALID_TYPES="feat|fix|chore|refactor|test|docs|ci|Merge"
 
           from='${{ steps.range.outputs.from }}'
           to='${{ steps.range.outputs.to }}'
