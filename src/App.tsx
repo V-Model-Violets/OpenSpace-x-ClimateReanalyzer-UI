@@ -33,7 +33,7 @@ function App() {
       </h2>
       <div className="buttons" style={{ fontFamily: "Inria Serif" }}>
         <Link to="/daily-temperature">
-          <button>Daily Temperature</button>
+          <button>Daily Temperature (Prototype)</button>
         </Link>
         <Link to="/precipitation">
           <button>Precipitation</button>
