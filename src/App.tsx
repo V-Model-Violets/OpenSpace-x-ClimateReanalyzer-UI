@@ -1,11 +1,9 @@
-import { useState } from "react";
+import { Link } from "react-router-dom";
 import "./App.css";
 import finalLogo from "./assets/finalLogo.png";
 import UmaineLogo from "./assets/university_of_maine_logo-freelogovectors.net_-2706234335.png";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
       <h1
@@ -34,21 +32,21 @@ function App() {
         Univeristy of Maine
       </h2>
       <div className="buttons" style={{ fontFamily: "Inria Serif" }}>
-        <button onClick={() => setCount((count) => count + 1)}>
-          Daily Temperature {count}
-        </button>
-        <button onClick={() => setCount((count) => count + 1)}>
-          Precipitation {count}
-        </button>
-        <button onClick={() => setCount((count) => count + 1)}>
-          Sea Surface Temperature {count}
-        </button>
-        <button onClick={() => setCount((count) => count + 1)}>
-          Jetstream {count}
-        </button>
-        <button onClick={() => setCount((count) => count + 1)}>
-          Ice and Snow Coverage {count}
-        </button>
+        <Link to="/daily-temperature">
+          <button>Daily Temperature</button>
+        </Link>
+        <Link to="/precipitation">
+          <button>Precipitation</button>
+        </Link>
+        <Link to="/sea-surface-temperature">
+          <button>Sea Surface Temperature</button>
+        </Link>
+        <Link to="/jetstream">
+          <button>Jetstream</button>
+        </Link>
+        <Link to="/ice-snow-coverage">
+          <button>Ice and Snow Coverage</button>
+        </Link>
       </div>
       <div
         style={{
@@ -56,7 +54,7 @@ function App() {
           alignItems: "center",
           justifyContent: "center",
           gap: "15px",
-          marginTop: "-70px",
+          marginTop: "20px",
         }}
       >
         <img
