@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./SearchPage.css";
-import { ModernDatePicker } from "../components/MapDatePicker";
+import { MapDatePicker } from "../components/MapDatePicker";
 
 const MAX_ZOOM = 6;
 const BASE_TILES_X = 42;
@@ -103,7 +103,7 @@ function DailyTemperatureSearchPage() {
 
       <div className="search">
         <div className="modern-date-selection">
-          <ModernDatePicker
+          <MapDatePicker
             value={selectedDate}
             onChange={setSelectedDate}
             label="Please select a date:"

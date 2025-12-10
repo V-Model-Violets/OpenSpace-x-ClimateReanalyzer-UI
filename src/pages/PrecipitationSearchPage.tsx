@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./SearchPage.css";
-import { ModernDatePicker } from "../components/MapDatePicker";
+import { MapDatePicker } from "../components/MapDatePicker";
 
 function PrecipitationSearchPage() {
   const [selectedDate, setSelectedDate] = useState("");
@@ -32,7 +32,7 @@ function PrecipitationSearchPage() {
       </h2>
       <div className="search">
         <div className="modern-date-selection">
-          <ModernDatePicker
+          <MapDatePicker
             value={selectedDate}
             onChange={setSelectedDate}
             label="Please select a date:"

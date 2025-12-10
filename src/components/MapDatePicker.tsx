@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import "./ModernDatePicker.css";
+import "./MapDatePicker.css";
 
-interface ModernDatePickerProps {
+interface MapDatePickerProps {
   value?: string;
   onChange: (date: string) => void;
   placeholder?: string;
@@ -10,7 +10,7 @@ interface ModernDatePickerProps {
   label?: string;
 }
 
-export const ModernDatePicker: React.FC<ModernDatePickerProps> = ({
+export const MapDatePicker: React.FC<MapDatePickerProps> = ({
   value = "",
   onChange,
   placeholder = "Select a date",
