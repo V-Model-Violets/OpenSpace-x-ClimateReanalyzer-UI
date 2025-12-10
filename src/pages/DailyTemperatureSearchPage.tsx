@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import "./SearchPage.css";
 import { MapDatePicker } from "../components/MapDatePicker";
 
@@ -77,6 +78,26 @@ function DailyTemperatureSearchPage() {
 
   return (
     <>
+      <Link to="/" style={{ textDecoration: "none" }}>
+        <button
+          style={{
+            position: "absolute",
+            top: "20px",
+            left: "20px",
+            padding: "0.75rem 1.5rem",
+            fontSize: "1rem",
+            borderRadius: "50px",
+            backgroundColor: "#79bde8",
+            color: "#082e58",
+            border: "2px solid white",
+            cursor: "pointer",
+            fontFamily: "Inria Serif",
+            fontWeight: "lighter",
+          }}
+        >
+          ←
+        </button>
+      </Link>
       <h1
         style={{
           color: "white",
