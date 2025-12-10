@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./SearchPage.css";
+import { ModernDatePicker } from "../components/MapDatePicker";
 
 const MAX_ZOOM = 6;
 const BASE_TILES_X = 42;
@@ -101,15 +102,13 @@ function DailyTemperatureSearchPage() {
       </h2>
 
       <div className="search">
-        <div className="date-selection">
-          <label htmlFor="start">Please select a date:</label>
-          <input
-            type="date"
-            id="start"
-            name="date"
-            min="1900-01-01"
+        <div className="modern-date-selection">
+          <ModernDatePicker
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={setSelectedDate}
+            label="Please select a date:"
+            placeholder="Choose a date for temperature data"
+            minDate="1900-01-01"
           />
           <div className="buttons">
             <button type="button" onClick={handleSubmit}>
@@ -145,8 +144,9 @@ function DailyTemperatureSearchPage() {
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
-          marginTop: "15px",
+          flexDirection: "column",
+          alignItems: "center",
+          marginTop: "25px",
         }}
       >
         <h2
@@ -155,34 +155,34 @@ function DailyTemperatureSearchPage() {
             fontFamily: "Inria Serif",
             fontSize: "20px",
             fontWeight: "lighter",
-            margin: "0",
+            margin: "0 0 15px 0",
           }}
         >
           Hottest Average World Temp:
         </h2>
 
-        <div className="buttons">
-          <button
-            type="button"
-            onClick={() => {
-              setBaseUrl("http://localhost:54139/tiles/Test-CR/Bmng/tile");
-              setZoom(1);
-              setX(0);
-              setY(0);
-              setIsModalOpen(true);
-            }}
-          >
-            July 22, 2024
-          </button>
-        </div>
+        <button
+          type="button"
+          className="suggested-map-button"
+          onClick={() => {
+            setBaseUrl("http://localhost:54139/tiles/Test-CR/Bmng/tile");
+            setZoom(1);
+            setX(0);
+            setY(0);
+            setIsModalOpen(true);
+          }}
+        >
+          July 22, 2024
+        </button>
       </div>
 
       {/* Suggested Map 2 */}
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
-          marginTop: "15px",
+          flexDirection: "column",
+          alignItems: "center",
+          marginTop: "25px",
         }}
       >
         <h2
@@ -191,26 +191,25 @@ function DailyTemperatureSearchPage() {
             fontFamily: "Inria Serif",
             fontSize: "20px",
             fontWeight: "lighter",
-            margin: "0",
+            margin: "0 0 15px 0",
           }}
         >
           Day with Coldest Recorded Surface Temp:
         </h2>
 
-        <div className="buttons">
-          <button
-            type="button"
-            onClick={() => {
-              setBaseUrl("http://localhost:54139/tiles/Test-CR/Bmng/tile");
-              setZoom(0);
-              setX(0);
-              setY(0);
-              setIsModalOpen(true);
-            }}
-          >
-            July 21, 1983
-          </button>
-        </div>
+        <button
+          type="button"
+          className="suggested-map-button"
+          onClick={() => {
+            setBaseUrl("http://localhost:54139/tiles/Test-CR/Bmng/tile");
+            setZoom(0);
+            setX(0);
+            setY(0);
+            setIsModalOpen(true);
+          }}
+        >
+          July 21, 1983
+        </button>
       </div>
 
       {isModalOpen && baseUrl && (

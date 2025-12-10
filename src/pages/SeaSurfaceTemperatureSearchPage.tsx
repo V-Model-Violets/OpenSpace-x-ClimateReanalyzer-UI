@@ -1,8 +1,9 @@
 import { useState } from "react";
 import "./SearchPage.css";
+import { ModernDatePicker } from "../components/MapDatePicker";
 
 function SeaSurfaceTemperatureSearchPage() {
-  const [count, setCount] = useState(0);
+  const [selectedDate, setSelectedDate] = useState("");
   return (
     <>
       <h1
@@ -30,13 +31,16 @@ function SeaSurfaceTemperatureSearchPage() {
         Maps that show a sea surface temperature overlay on the OpenSpace globe.
       </h2>
       <div className="search">
-        <div className="date-selection">
-          <label htmlFor="start">Please select a date:</label>
-          <input type="date" id="start" name="date" min="1900-01-01" />
+        <div className="modern-date-selection">
+          <ModernDatePicker
+            value={selectedDate}
+            onChange={setSelectedDate}
+            label="Please select a date:"
+            placeholder="Choose a date for sea surface temperature data"
+            minDate="1900-01-01"
+          />
           <div className="buttons" style={{ fontFamily: "Inria Serif" }}>
-            <button onClick={() => setCount((count) => count + 1)}>
-              Submit {count}
-            </button>
+            <button>Submit</button>
           </div>
         </div>
       </div>
@@ -65,10 +69,9 @@ function SeaSurfaceTemperatureSearchPage() {
       <div
         style={{
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
-          gap: "0px",
-          marginTop: "15px",
+          marginTop: "25px",
         }}
       >
         <h2
@@ -77,24 +80,19 @@ function SeaSurfaceTemperatureSearchPage() {
             fontFamily: "Inria Serif",
             fontSize: "20px",
             fontWeight: "lighter",
-            margin: "0",
+            margin: "0 0 15px 0",
           }}
         >
           Hottest Average World Sea Surface Temp:
         </h2>
-        <div className="buttons" style={{ fontFamily: "Inria Serif" }}>
-          <button onClick={() => setCount((count) => count + 1)}>
-            July 22, 2024 {count}
-          </button>
-        </div>
+        <button className="suggested-map-button">July 22, 2024</button>
       </div>
       <div
         style={{
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
-          gap: "0px",
-          marginTop: "15px",
+          marginTop: "25px",
         }}
       >
         <h2
@@ -103,16 +101,12 @@ function SeaSurfaceTemperatureSearchPage() {
             fontFamily: "Inria Serif",
             fontSize: "20px",
             fontWeight: "lighter",
-            margin: "0",
+            margin: "0 0 15px 0",
           }}
         >
           Coldest Average World Sea Surface Temp:
         </h2>
-        <div className="buttons" style={{ fontFamily: "Inria Serif" }}>
-          <button onClick={() => setCount((count) => count + 1)}>
-            July 21, 1983 {count}
-          </button>
-        </div>
+        <button className="suggested-map-button">July 21, 1983</button>
       </div>
     </>
   );
