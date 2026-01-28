@@ -25,7 +25,8 @@
         "formulahendry.auto-rename-tag",
         "christian-kohler.path-intellisense",
         "ms-vscode.vscode-json",
-        "ms-vscode.live-server"
+        "ms-vscode.live-server",
+        "ms-playwright.playwright"
       ]
     }
   },
