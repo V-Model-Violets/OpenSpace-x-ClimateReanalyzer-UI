@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daily Temperature - Climate Reanalyzer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="background-overlay"></div>
+    <div class="stars"></div>
+
+    <div class="page-container">
+      <button onclick="goBack()" class="back-button fixed-back-button">
+        ←
+      </button>
+
+      <div class="page-header">
+        <h1 class="page-title">Daily Temperature</h1>
+        <h2 class="subtitle">
+          Maps that show a daily temperature overlay on the OpenSpace globe.
+        </h2>
+      </div>
+
+      <div class="search-form">
+        <div class="form-group">
+          <label for="dateInput">Please select a date:</label>
+          <input
+            type="date"
+            id="dateInput"
+            class="form-input"
+            placeholder="Choose a date for temperature data"
+            min="1900-01-01"
+          />
+        </div>
+        <button type="button" onclick="submitDate()" class="search-button">
+          Submit
+        </button>
+      </div>
+
+      <div class="line-1"></div>
+
+      <div style="display: flex; justify-content: center; margin-top: 50px">
+        <h2 class="subtitle">Suggested Maps</h2>
+      </div>
+
+      <!-- Suggested Map 1 -->
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-top: 25px;
+        "
+      >
+        <h2 class="subtitle">Hottest Average World Temp:</h2>
+        <button
+          type="button"
+          class="search-button"
+          onclick="
+            loadSuggestedMap(
+              'http://localhost:54139/tiles/Test-CR/Bmng/tile',
+              1,
+              0,
+              0,
+            )
+          "
+          style="margin-top: 15px"
+        >
+          July 22, 2024
+        </button>
+      </div>
+
+      <!-- Suggested Map 2 -->
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-top: 25px;
+        "
+      >
+        <h2 class="subtitle">Day with Coldest Recorded Surface Temp:</h2>
+        <button
+          type="button"
+          class="search-button"
+          onclick="
+            loadSuggestedMap(
+              'http://localhost:54139/tiles/Test-CR/Bmng/tile',
+              0,
+              0,
+              0,
+            )
+          "
+          style="margin-top: 15px"
+        >
+          July 21, 1983
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="mapModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+
+        <div class="map-display">
+          <img id="mapImage" class="map-image" alt="Daily temperature map" />
+        </div>
+
+        <div class="map-controls">
+          <div class="map-info">
+            Zoom Level: <span id="zoomLevel">0</span> (Max: 6)
+          </div>
+          <button onclick="zoomOut()" id="zoomOutBtn" class="control-button">
+            Zoom Out (-)
+          </button>
+          <button onclick="zoomIn()" id="zoomInBtn" class="control-button">
+            Zoom In (+)
+          </button>
+        </div>
+
+        <div class="map-controls">
+          <div class="map-info">
+            X Coordinate: <span id="xCoord">0</span> (Max:
+            <span id="maxX">0</span>)
+          </div>
+          <button onclick="xDecrement()" id="xDecBtn" class="control-button">
+            ← X-
+          </button>
+          <button onclick="xIncrement()" id="xIncBtn" class="control-button">
+            X+ →
+          </button>
+        </div>
+
+        <div class="map-controls">
+          <div class="map-info">
+            Y Coordinate: <span id="yCoord">0</span> (Max:
+            <span id="maxY">0</span>)
+          </div>
+          <button onclick="yDecrement()" id="yDecBtn" class="control-button">
+            ↑ Y-
+          </button>
+          <button onclick="yIncrement()" id="yIncBtn" class="control-button">
+            Y+ ↓
+          </button>
+        </div>
+
+        <div
+          class="map-info"
+          style="margin-top: 15px; font-size: 12px; word-break: break-all"
+        >
+          URL: <span id="currentUrl"></span>
+        </div>
+      </div>
+    </div>
+
+    <script src="daily-temperature.js"></script>
+  </body>
+</html>
