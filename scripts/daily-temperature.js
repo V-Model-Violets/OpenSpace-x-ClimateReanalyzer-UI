@@ -1,5 +1,15 @@
 // Daily Temperature Search Page JavaScript
 
+// Initialize date picker on page load
+let datePicker;
+
+window.addEventListener("DOMContentLoaded", function () {
+  datePicker = createCalendarPicker("dateInput", {
+    minYear: 1900,
+    maxYear: new Date().getFullYear() + 1,
+  });
+});
+
 const MAX_ZOOM = 6;
 const BASE_TILES_X = 42;
 const BASE_TILES_Y = 21;
@@ -10,7 +20,7 @@ let y = 0;
 let baseUrl = null;
 
 function goBack() {
-  window.location.href = "index.html";
+  window.location.href = "../index.html";
 }
 
 function getMaxXIndex(zoomLevel) {
@@ -52,8 +62,7 @@ function updateMapDisplay() {
 }
 
 function submitDate() {
-  const dateInput = document.getElementById("dateInput");
-  const selectedDate = dateInput.value;
+  const selectedDate = datePicker ? datePicker.getValue() : null;
 
   if (!selectedDate) {
     alert("Please select a date first.");

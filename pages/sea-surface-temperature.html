@@ -3,8 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jetstream - Climate Reanalyzer</title>
-    <link rel="stylesheet" href="styles.css" />
+    <title>Sea Surface Temperature - Climate Reanalyzer</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="../styles/calendar-picker.css" />
   </head>
   <body>
     <div class="background-overlay"></div>
@@ -16,22 +17,16 @@
       </button>
 
       <div class="page-header">
-        <h1 class="page-title">Jetstream</h1>
+        <h1 class="page-title">Sea Surface Temperature</h1>
         <h2 class="subtitle">
-          Atmospheric jetstream patterns and wind current data.
+          Ocean temperature data showing thermal patterns across global waters.
         </h2>
       </div>
 
       <div class="search-form">
         <div class="form-group">
           <label for="dateInput">Please select a date:</label>
-          <input
-            type="date"
-            id="dateInput"
-            class="form-input"
-            placeholder="Choose a date for jetstream data"
-            min="1900-01-01"
-          />
+          <div id="dateInput" class="form-input"></div>
         </div>
         <button type="button" onclick="submitSearch()" class="search-button">
           Submit
@@ -39,21 +34,33 @@
       </div>
     </div>
 
+    <script src="../scripts/calendar-picker.js"></script>
     <script>
+      // Initialize calendar picker
+      let datePicker;
+
+      window.addEventListener("DOMContentLoaded", function () {
+        datePicker = createCalendarPicker("dateInput", {
+          minYear: 1900,
+          maxYear: new Date().getFullYear() + 1,
+        });
+      });
+
       function goBack() {
-        window.location.href = "index.html";
+        window.location.href = "../index.html";
       }
 
       function submitSearch() {
-        const dateInput = document.getElementById("dateInput");
-        const selectedDate = dateInput.value;
+        const selectedDate = datePicker ? datePicker.getValue() : null;
 
         if (!selectedDate) {
           alert("Please select a date first.");
           return;
         }
 
-        alert(`Jetstream search for ${selectedDate} - Feature coming soon!`);
+        alert(
+          `Sea Surface Temperature search for ${selectedDate} - Feature coming soon!`,
+        );
       }
     </script>
   </body>

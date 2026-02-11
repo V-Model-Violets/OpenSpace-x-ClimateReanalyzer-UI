@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Daily Temperature - Climate Reanalyzer</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="../styles/calendar-picker.css" />
   </head>
   <body>
     <div class="background-overlay"></div>
@@ -25,13 +26,7 @@
       <div class="search-form">
         <div class="form-group">
           <label for="dateInput">Please select a date:</label>
-          <input
-            type="date"
-            id="dateInput"
-            class="form-input"
-            placeholder="Choose a date for temperature data"
-            min="1900-01-01"
-          />
+          <div id="dateInput" class="form-input"></div>
         </div>
         <button type="button" onclick="submitDate()" class="search-button">
           Submit
@@ -155,6 +150,7 @@
       </div>
     </div>
 
-    <script src="daily-temperature.js"></script>
+    <script src="../scripts/calendar-picker.js"></script>
+    <script src="../scripts/daily-temperature.js"></script>
   </body>
 </html>
