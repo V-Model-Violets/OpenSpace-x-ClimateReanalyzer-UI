@@ -10,22 +10,6 @@ A web application for visualizing climate data from the Climate Reanalyzer at th
 - **Jetstream Patterns**: Atmospheric wind current visualization
 - **Ice and Snow Coverage**: Polar ice extent data
 
-## Project Structure
-
-```
-├── index.html                    # Main landing page - OPEN THIS FILE
-├── daily-temperature.html        # Daily temperature search page (fully functional)
-├── precipitation.html            # Precipitation search page (placeholder)
-├── sea-surface-temperature.html  # Sea surface temperature page (placeholder)
-├── ice-snow-coverage.html        # Ice and snow coverage page (placeholder)
-├── jetstream.html                # Jetstream page (placeholder)
-├── styles.css                    # Main stylesheet
-├── script.js                     # Main navigation JavaScript
-├── daily-temperature.js          # Daily temperature page functionality
-├── assets/                       # Images and logo files
-└── package.json                  # Only needed for testing with Playwright
-```
-
 ## Technologies Used
 
 - **HTML5**: Semantic markup structure
@@ -68,22 +52,6 @@ If you want to run automated tests:
 npm install    # Install Playwright for testing
 npm test       # Run tests
 ```
-
-## Features Status
-
-### Daily Temperature (Fully Functional)
-
-- ✅ Interactive map viewer with zoom controls
-- ✅ X/Y coordinate navigation
-- ✅ Tile-based image loading
-- ✅ Suggested historical temperature maps
-
-### Other Climate Data (Placeholders)
-
-- 🔄 Precipitation maps
-- 🔄 Sea surface temperature maps
-- 🔄 Jetstream wind maps
-- 🔄 Ice/Snow coverage maps
 
 ## Migration from React
 
