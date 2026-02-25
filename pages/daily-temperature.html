@@ -23,6 +23,44 @@
         </h2>
       </div>
 
+      <!-- OpenSpace Connection Status -->
+      <div id="container" style="text-align: center; margin: 20px 0">
+        <div
+          id="connection-status"
+          style="
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            display: inline-block;
+          "
+        >
+          <span style="color: #fff; margin-right: 10px"
+            >Connect to OpenSpace:</span
+          >
+          <input
+            id="ipaddress"
+            type="text"
+            placeholder="Enter IP address"
+            value="localhost"
+            style="
+              padding: 8px;
+              border: 1px solid #555;
+              border-radius: 4px;
+              background: rgba(255, 255, 255, 0.1);
+              color: #fff;
+              margin-right: 10px;
+            "
+          />
+          <button
+            onclick="connectToOpenSpace()"
+            class="search-button"
+            style="margin-left: 0"
+          >
+            Connect
+          </button>
+        </div>
+      </div>
+
       <div class="search-form">
         <div class="form-group">
           <label for="dateInput">Please select a date:</label>
@@ -150,6 +188,7 @@
       </div>
     </div>
 
+    <script src="../scripts/openspace-api.js"></script>
     <script src="../scripts/calendar-picker.js"></script>
     <script src="../scripts/daily-temperature.js"></script>
   </body>

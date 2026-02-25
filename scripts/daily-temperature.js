@@ -8,6 +8,8 @@ window.addEventListener("DOMContentLoaded", function () {
     minYear: 1900,
     maxYear: new Date().getFullYear() + 1,
   });
+  // Initialize OpenSpace connection after page loads
+  initializeOpenSpaceConnection();
 });
 
 const MAX_ZOOM = 6;
@@ -18,6 +20,78 @@ let zoom = 0;
 let x = 0;
 let y = 0;
 let baseUrl = null;
+let openspace = null;
+let openspaceApi = null;
+
+const LAYER_ID = "EarthOverlay";
+// Change this to a local directory containing earth.tif for testing.
+// Openspace does not seem to like relative filepaths.
+const FILE_PATH = "earth.tif";
+
+// Initialize Openspace Connection
+function initializeOpenSpaceConnection() {
+  // Check if openspaceApi is available
+  if (typeof window.openspaceApi === "undefined") {
+    console.warn(
+      "OpenSpace API not loaded. Make sure openspace-api.js is included.",
+    );
+    document.getElementById("connection-status").innerHTML =
+      "OpenSpace API not loaded. Please check script includes.";
+    return;
+  }
+
+  // Try to connect with default localhost
+  connectToOpenSpace();
+}
+
+var connectToOpenSpace = () => {
+  var host = document.getElementById("ipaddress")?.value || "localhost";
+  var port = 4682;
+
+  if (typeof window.openspaceApi === "undefined") {
+    console.error("OpenSpace API not available");
+    document.getElementById("connection-status").innerHTML =
+      "OpenSpace API not available. Please refresh the page.";
+    return;
+  }
+
+  var api = window.openspaceApi(host, port);
+  openspaceApi = api;
+
+  api.onDisconnect(() => {
+    console.log("OpenSpace disconnected");
+    document.getElementById("container").style.display = "block";
+    var statusDiv = document.getElementById("connection-status");
+    statusDiv.innerHTML =
+      '<span style="color: #ff6b6b; margin-right: 10px;">Disconnected from OpenSpace</span>' +
+      '<input id="ipaddress" type="text" placeholder="Enter IP address" value="' +
+      host +
+      '" style="padding: 8px; border: 1px solid #555; border-radius: 4px; background: rgba(255, 255, 255, 0.1); color: #fff; margin-right: 10px;" />' +
+      '<button onclick="connectToOpenSpace();" class="search-button" style="margin-left: 0;">Reconnect</button>';
+    openspace = null;
+  });
+
+  api.onConnect(async () => {
+    document.getElementById("container").style.display = "block";
+    document.getElementById("connection-status").innerHTML =
+      '<span style="color: #51cf66;">✓ Connected to OpenSpace at ' +
+      host +
+      ":" +
+      port +
+      "</span>";
+
+    try {
+      openspace = await api.library();
+    } catch (e) {
+      console.error("Error initializing OpenSpace:", e);
+      document.getElementById("connection-status").innerHTML =
+        "Connected but initialization failed: " + e.message;
+    }
+  });
+
+  // Connect
+  api.connect();
+};
 
 function goBack() {
   window.location.href = "../index.html";
@@ -76,6 +150,15 @@ function submitDate() {
   y = 0;
 
   openModal();
+
+  // Update OpenSpace globe display and time if connected
+  if (openspaceApi) {
+    try {
+      updateOpenSpaceForDate(selectedDate);
+    } catch (e) {
+      console.warn("Failed to update OpenSpace for selected date:", e);
+    }
+  }
 }
 
 function loadSuggestedMap(url, zoomLevel, xCoord, yCoord) {
@@ -149,3 +232,41 @@ window.onclick = function (event) {
     closeModal();
   }
 };
+
+async function updateOpenSpaceForDate(selectedDate) {
+  if (!selectedDate || !openspaceApi) return;
+
+  const parts = selectedDate.split("-");
+  if (parts.length !== 3) return;
+
+  const [yearStr, monthStr, dayStr] = parts;
+  if (!yearStr || !monthStr || !dayStr) return;
+
+  const isoTime = `${yearStr.padStart(4, "0")}-${monthStr.padStart(
+    2,
+    "0",
+  )}-${dayStr.padStart(2, "0")}T12:00:00`;
+
+  try {
+    await openspaceApi.executeLuaScript(
+      `openspace.time.setTime("${isoTime}")`,
+      false,
+    );
+  } catch (e) {
+    console.warn("Failed to set OpenSpace time:", e);
+  }
+
+  try {
+    const lua = `
+      openspace.globebrowsing.addLayer("Earth", "Overlays", {
+      Identifier = "${LAYER_ID}",
+      Name = "Flat Earth",
+      FilePath = "${FILE_PATH}",
+      BlendMode = "Color",
+      Enabled = true,})`;
+
+    await openspaceApi.executeLuaScript(lua, false);
+  } catch (e) {
+    console.warn("Failed to display flat earth layer in OpenSpace:", e);
+  }
+}
