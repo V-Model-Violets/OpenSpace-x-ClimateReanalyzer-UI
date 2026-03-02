@@ -1,4 +1,4 @@
-// Daily Temperature Search Page JavaScript
+// Search Page JavaScript
 
 // Initialize date picker on page load
 let datePicker;
@@ -26,7 +26,8 @@ let openspaceApi = null;
 const LAYER_ID = "EarthOverlay";
 // Change this to a local directory containing earth.tif for testing.
 // Openspace does not seem to like relative filepaths.
-const FILE_PATH = "earth.tif";
+const FILE_PATH =
+  "C:/Users/picco/Desktop/OpenSpace-x-ClimateReanalyzerUI/assets/earth2.tif";
 
 // Initialize Openspace Connection
 function initializeOpenSpaceConnection() {
