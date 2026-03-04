@@ -12,17 +12,22 @@ window.addEventListener("DOMContentLoaded", function () {
   initializeOpenSpaceConnection();
 });
 
+// Maximum zoom level supported by the tile server pyramid
 const MAX_ZOOM = 6;
+// Number of tiles in X direction at maximum zoom
 const BASE_TILES_X = 42;
+// Number of tiles in Y direction at maximum zoom
 const BASE_TILES_Y = 21;
 
-let zoom = 0;
-let x = 0;
-let y = 0;
-let baseUrl = null;
-let openspace = null;
-let openspaceApi = null;
+// Current tile navigation state
+let zoom = 0; // Active zoom level (0 = most zoomed out, MAX_ZOOM = most zoomed in)
+let x = 0; // Active tile column index
+let y = 0; // Active tile row index
+let baseUrl = null; // Base URL of the currently loaded tile server
+let openspace = null; // OpenSpace Lua library object (populated after API connects)
+let openspaceApi = null; // OpenSpace WebSocket API instance
 
+// Identifier used when adding/replacing the globe overlay layer in OpenSpace
 const LAYER_ID = "EarthOverlay";
 // Change this to a local directory containing earth.tif for testing.
 // Openspace does not seem to like relative filepaths.
@@ -93,25 +98,50 @@ var connectToOpenSpace = () => {
   api.connect();
 };
 
+// Navigate back to the main index page
 function goBack() {
   window.location.href = "../index.html";
 }
 
+/**
+ * Returns the maximum valid tile X index for a given zoom level.
+ * The tile grid resolution is halved for each step down from MAX_ZOOM.
+ *
+ * @param {number} zoomLevel
+ * @returns {number}
+ */
 function getMaxXIndex(zoomLevel) {
   const divisor = Math.pow(2, MAX_ZOOM - zoomLevel);
   return Math.ceil(BASE_TILES_X / divisor) - 1;
 }
 
+/**
+ * Returns the maximum valid tile Y index for a given zoom level.
+ *
+ * @param {number} zoomLevel
+ * @returns {number}
+ */
 function getMaxYIndex(zoomLevel) {
   const divisor = Math.pow(2, MAX_ZOOM - zoomLevel);
   return Math.ceil(BASE_TILES_Y / divisor) - 1;
 }
 
+/**
+ * Constructs the URL for the tile at the current zoom, x, and y coordinates.
+ * Returns null if no base URL has been configured yet.
+ *
+ * @returns {string|null}
+ */
 function getCurrentImageUrl() {
   if (!baseUrl) return null;
   return `${baseUrl}/${zoom}/${y}/${x}.jpg`;
 }
 
+/**
+ * Refreshes the tile map viewer UI to reflect the current zoom, x, and y state.
+ * Updates the displayed tile image, coordinate readouts, and the enabled/disabled
+ * state of all navigation buttons.
+ */
 function updateMapDisplay() {
   const imageUrl = getCurrentImageUrl();
   if (imageUrl) {
@@ -135,23 +165,31 @@ function updateMapDisplay() {
   document.getElementById("yIncBtn").disabled = y === getMaxYIndex(zoom);
 }
 
+/**
+ * Handles the date submission from the calendar picker.
+ * Resets the tile view to the default local tile server and zoom level,
+ * opens the map modal, and (if connected) pushes the selected date's time
+ * and tile layer to the OpenSpace application.
+ */
 function submitDate() {
   const selectedDate = datePicker ? datePicker.getValue() : null;
 
+  // Require a date to be chosen before proceeding
   if (!selectedDate) {
     alert("Please select a date first.");
     return;
   }
 
-  // Use default URL for date submission
+  // Point to the local tile server and start at the lowest zoom level
   baseUrl = "http://localhost:54139/tiles/Tif/Bmng/tile";
   zoom = 0;
   x = 0;
   y = 0;
 
+  // Open the tile map viewer modal
   openModal();
 
-  // Update OpenSpace globe display and time if connected
+  // Update OpenSpace globe display and simulation time if connected
   if (openspaceApi) {
     try {
       updateOpenSpaceForDate(selectedDate);
@@ -161,6 +199,15 @@ function submitDate() {
   }
 }
 
+/**
+ * Loads a pre-defined ("suggested") map at a specific tile URL and coordinates,
+ * then opens the tile viewer modal. Called by suggested-map buttons in the UI.
+ *
+ * @param {string} url - Base URL of the tile server to load.
+ * @param {number} zoomLevel - Initial zoom level to display.
+ * @param {number} xCoord - Initial tile X index.
+ * @param {number} yCoord - Initial tile Y index.
+ */
 function loadSuggestedMap(url, zoomLevel, xCoord, yCoord) {
   baseUrl = url;
   zoom = zoomLevel;
@@ -170,15 +217,18 @@ function loadSuggestedMap(url, zoomLevel, xCoord, yCoord) {
   openModal();
 }
 
+// Shows the tile map viewer modal and refreshes the displayed tile and controls
 function openModal() {
   document.getElementById("mapModal").classList.add("show");
   updateMapDisplay();
 }
 
+// Hides the tile map viewer modal
 function closeModal() {
   document.getElementById("mapModal").classList.remove("show");
 }
 
+// Zoom in one level, clamping x/y indices to remain within the new valid range
 function zoomIn() {
   if (zoom < MAX_ZOOM) {
     zoom++;
@@ -188,6 +238,7 @@ function zoomIn() {
   }
 }
 
+// Zoom out one level, clamping x/y indices to remain within the new valid range
 function zoomOut() {
   if (zoom > 0) {
     zoom--;
@@ -197,6 +248,7 @@ function zoomOut() {
   }
 }
 
+// Move the tile view one step in the positive X direction (east)
 function xIncrement() {
   if (x < getMaxXIndex(zoom)) {
     x++;
@@ -204,6 +256,7 @@ function xIncrement() {
   }
 }
 
+// Move the tile view one step in the negative X direction (west)
 function xDecrement() {
   if (x > 0) {
     x--;
@@ -211,6 +264,7 @@ function xDecrement() {
   }
 }
 
+// Move the tile view one step in the positive Y direction (south)
 function yIncrement() {
   if (y < getMaxYIndex(zoom)) {
     y++;
@@ -218,6 +272,7 @@ function yIncrement() {
   }
 }
 
+// Move the tile view one step in the negative Y direction (north)
 function yDecrement() {
   if (y > 0) {
     y--;
@@ -233,20 +288,35 @@ window.onclick = function (event) {
   }
 };
 
+/**
+ * Synchronises the OpenSpace application with the user-selected date.
+ * Performs two independent operations:
+ *   1. Sets the in-simulation clock to noon (12:00:00) on the selected day.
+ *   2. Adds (or replaces) a globe overlay layer on Earth using the configured
+ *      tile file path.
+ *
+ * Each operation is wrapped in its own try/catch so a failure in one does
+ * not prevent the other from running.
+ *
+ * @param {string} selectedDate - ISO date string in "YYYY-MM-DD" format.
+ */
 async function updateOpenSpaceForDate(selectedDate) {
   if (!selectedDate || !openspaceApi) return;
 
+  // Split the date string into its year, month, and day components
   const parts = selectedDate.split("-");
   if (parts.length !== 3) return;
 
   const [yearStr, monthStr, dayStr] = parts;
   if (!yearStr || !monthStr || !dayStr) return;
 
+  // Build a full ISO 8601 datetime at noon on the selected day
   const isoTime = `${yearStr.padStart(4, "0")}-${monthStr.padStart(
     2,
     "0",
   )}-${dayStr.padStart(2, "0")}T12:00:00`;
 
+  // Step 1: Advance the OpenSpace simulation clock to the selected date
   try {
     await openspaceApi.executeLuaScript(
       `openspace.time.setTime("${isoTime}")`,
@@ -256,7 +326,9 @@ async function updateOpenSpaceForDate(selectedDate) {
     console.warn("Failed to set OpenSpace time:", e);
   }
 
+  // Step 2: Add the tile imagery as a globe overlay layer in OpenSpace
   try {
+    // Lua script that registers the layer in Earth's Overlays group
     const lua = `
       openspace.globebrowsing.addLayer("Earth", "Overlays", {
       Identifier = "${LAYER_ID}",

@@ -1,7 +1,30 @@
 // Custom Calendar Picker for OpenSpace Compatibility
 // Works without HTML5 date input dependencies
 
+/**
+ * CalendarPicker – An interactive calendar date-picker widget.
+ *
+ * Renders a fully styled month/year-navigation calendar inside a target DOM
+ * element without relying on the native <input type="date"> element, ensuring
+ * compatibility with embedded browsers (such as OpenSpace's Chromium CEF).
+ *
+ * @example
+ *   const picker = new CalendarPicker("dateInput", {
+ *     minYear: 1940,
+ *     maxYear: 2030,
+ *     onDateSelect: (date) => console.log(date.toISOString()),
+ *   });
+ *   const value = picker.getValue(); // e.g. "2026-03-04"
+ */
+
 class CalendarPicker {
+  /**
+   * @param {string} containerId - ID of the DOM element to render the calendar into.
+   * @param {object} [options={}]
+   * @param {number} [options.minYear=1900]   - Earliest year shown in the year dropdown.
+   * @param {number} [options.maxYear]        - Latest year shown (defaults to 10 years ahead).
+   * @param {Function} [options.onDateSelect] - Callback invoked with the selected Date object.
+   */
   constructor(containerId, options = {}) {
     this.containerId = containerId;
     this.selectedDate = null;
@@ -44,6 +67,13 @@ class CalendarPicker {
     this.renderCalendar();
   }
 
+  /**
+   * Builds and returns the full calendar HTML markup string.
+   * Includes the month/year navigation header, weekday row, and the
+   * day grid container (populated separately by renderCalendar).
+   *
+   * @returns {string} HTML string for the calendar widget.
+   */
   generateCalendarHTML() {
     return `
       <div class="calendar-header">
@@ -89,6 +119,10 @@ class CalendarPicker {
     `;
   }
 
+  /**
+   * Wires up event listeners for the prev/next navigation buttons and the
+   * month/year dropdown selects after the calendar HTML has been injected.
+   */
   attachEventListeners() {
     const container = document.getElementById(this.containerId);
 
@@ -112,6 +146,10 @@ class CalendarPicker {
     });
   }
 
+  /**
+   * Moves the calendar view back by one month, wrapping from January to
+   * December of the previous year when necessary.
+   */
   previousMonth() {
     if (this.currentMonth === 0) {
       this.currentMonth = 11;
@@ -123,6 +161,10 @@ class CalendarPicker {
     this.renderCalendar();
   }
 
+  /**
+   * Advances the calendar view by one month, wrapping from December to
+   * January of the next year when necessary.
+   */
   nextMonth() {
     if (this.currentMonth === 11) {
       this.currentMonth = 0;
@@ -134,6 +176,10 @@ class CalendarPicker {
     this.renderCalendar();
   }
 
+  /**
+   * Keeps the month and year <select> dropdowns in sync with the current
+   * internal state after a prev/next navigation button is pressed.
+   */
   updateSelects() {
     const monthSelect = document.getElementById("monthSelect");
     const yearSelect = document.getElementById("yearSelect");
@@ -194,6 +240,16 @@ class CalendarPicker {
     }
   }
 
+  /**
+   * Records the selected day, updates the displayed date string, highlights
+   * the clicked cell, and fires the onDateSelect callback.
+   *
+   * NOTE: This method relies on the browser's implicit global `event` object
+   * (via the click listener set in renderCalendar) to identify the clicked
+   * cell via event.target.
+   *
+   * @param {number} day - Day of the month that was clicked (1-based).
+   */
   selectDate(day) {
     this.selectedDate = new Date(this.currentYear, this.currentMonth, day);
 
@@ -212,6 +268,13 @@ class CalendarPicker {
     this.onDateSelect(this.selectedDate);
   }
 
+  /**
+   * Formats a Date object into the "YYYY-MM-DD" string format used
+   * by the rest of the application.
+   *
+   * @param {Date|null} date
+   * @returns {string}
+   */
   formatDate(date) {
     if (!date) return "";
     const year = date.getFullYear();
@@ -220,10 +283,23 @@ class CalendarPicker {
     return `${year}-${month}-${day}`;
   }
 
+  /**
+   * Returns the currently selected date as a "YYYY-MM-DD" string,
+   * or an empty string if no date has been selected.
+   *
+   * @returns {string}
+   */
   getValue() {
     return this.formatDate(this.selectedDate);
   }
 
+  /**
+   * Programmatically selects a date by its "YYYY-MM-DD" string value,
+   * navigating the calendar view to that month and re-rendering.
+   * Passing null or an empty string clears the selection.
+   *
+   * @param {string|null} dateString - Date in "YYYY-MM-DD" format.
+   */
   setValue(dateString) {
     if (!dateString) {
       this.selectedDate = null;
@@ -241,10 +317,18 @@ class CalendarPicker {
   }
 }
 
-// Global calendar instances
+// Global registry of CalendarPicker instances keyed by container ID
 window.calendarPickers = {};
 
-// Helper function to create calendar picker
+/**
+ * Factory function that creates a CalendarPicker, registers it globally,
+ * and returns it. Preferred over constructing CalendarPicker directly so
+ * that instances can be retrieved by other scripts via window.calendarPickers.
+ *
+ * @param {string} containerId - ID of the target DOM element.
+ * @param {object} [options={}] - Options forwarded to the CalendarPicker constructor.
+ * @returns {CalendarPicker}
+ */
 function createCalendarPicker(containerId, options = {}) {
   const picker = new CalendarPicker(containerId, options);
   window.calendarPickers[containerId] = picker;
