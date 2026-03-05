@@ -235,7 +235,7 @@ class CalendarPicker {
         dayCell.classList.add("today");
       }
 
-      dayCell.addEventListener("click", () => this.selectDate(day));
+      dayCell.addEventListener("click", (e) => this.selectDate(day, e));
       daysContainer.appendChild(dayCell);
     }
   }
@@ -244,13 +244,10 @@ class CalendarPicker {
    * Records the selected day, updates the displayed date string, highlights
    * the clicked cell, and fires the onDateSelect callback.
    *
-   * NOTE: This method relies on the browser's implicit global `event` object
-   * (via the click listener set in renderCalendar) to identify the clicked
-   * cell via event.target.
-   *
    * @param {number} day - Day of the month that was clicked (1-based).
+   * @param {MouseEvent} e - The click event object.
    */
-  selectDate(day) {
+  selectDate(day, e) {
     this.selectedDate = new Date(this.currentYear, this.currentMonth, day);
 
     // Update display
@@ -262,7 +259,8 @@ class CalendarPicker {
     // Remove previous selection and add to new
     const allDays = document.querySelectorAll(".calendar-day");
     allDays.forEach((d) => d.classList.remove("selected"));
-    event.target.classList.add("selected");
+    const target = e.target;
+    target.classList.add("selected");
 
     // Call callback
     this.onDateSelect(this.selectedDate);
