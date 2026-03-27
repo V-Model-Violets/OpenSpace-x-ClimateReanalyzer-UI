@@ -31,7 +31,8 @@ let openspaceApi = null; // OpenSpace WebSocket API instance
 const LAYER_ID = "EarthOverlay";
 // Change this to a local directory containing earth.tif for testing.
 // Openspace does not seem to like relative filepaths.
-const FILE_PATH = "earth.tif";
+const FILE_PATH =
+  "C:/Users/picco/Desktop/OpenSpace-x-ClimateReanalyzerUI/assets/earth2.tif";
 
 // Initialize Openspace Connection
 function initializeOpenSpaceConnection() {
@@ -342,3 +343,15 @@ async function updateOpenSpaceForDate(selectedDate) {
     console.warn("Failed to display flat earth layer in OpenSpace:", e);
   }
 }
+
+// Hides the globe overlay layer in OpenSpace by setting its enabled state to false
+// async function hideLayer() {
+//   if (!openspaceApi) return;
+
+//   try {
+//     const lua = 'openspace.setPropertyValue(`Scene.Earth.Renderable.Layers.Overlays.${LAYER_ID}.setEnabled(false)`;
+//     await openspaceApi.executeLuaScript(lua, false);
+//   } catch (e) {
+//     console.warn("Failed to hide layer in OpenSpace:", e);
+//   }
+// }
