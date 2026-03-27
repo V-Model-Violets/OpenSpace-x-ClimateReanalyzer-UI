@@ -29,9 +29,46 @@ let openspaceApi = null; // OpenSpace WebSocket API instance
 
 // Identifier used when adding/replacing the globe overlay layer in OpenSpace
 const LAYER_ID = "EarthOverlay";
-// Change this to a local directory containing earth.tif for testing.
-// Openspace does not seem to like relative filepaths.
-const FILE_PATH = "earth.tif";
+
+/**
+ * Builds a GDAL_WMS XML string for a TMS tile server URL.
+ * The ${z}, ${y}, ${x} tokens are left as literal text so GDAL resolves
+ * them at render time — they are NOT JavaScript template expressions.
+ *
+ * @param {string} tileBaseUrl - Base URL of the tile server (no trailing slash).
+ * @param {string} format      - File extension without dot, e.g. "jpg" or "png".
+ * @returns {string}
+ */
+function buildGdalWmsXml(tileBaseUrl, format) {
+  // The server has BASE_TILES_X x BASE_TILES_Y tiles at MAX_ZOOM — not a standard
+  // power-of-2 TMS pyramid.  Hardcode the zoom level in the URL and describe the
+  // grid as a single flat level (TileLevel=0) so GDAL maps the full globe extent
+  // to the exact tile count the server actually provides.
+  const serverUrl = tileBaseUrl + "/" + MAX_ZOOM + "/${y}/${x}." + format;
+  return [
+    "<GDAL_WMS>",
+    '  <Service name="TMS">',
+    "    <ServerUrl>" + serverUrl + "</ServerUrl>",
+    "  </Service>",
+    "  <DataWindow>",
+    "    <UpperLeftX>-180</UpperLeftX>",
+    "    <UpperLeftY>90</UpperLeftY>",
+    "    <LowerRightX>180</LowerRightX>",
+    "    <LowerRightY>-90</LowerRightY>",
+    "    <TileCountX>" + BASE_TILES_X + "</TileCountX>",
+    "    <TileCountY>" + BASE_TILES_Y + "</TileCountY>",
+    "    <TileLevel>0</TileLevel>",
+    "    <YOrigin>top</YOrigin>",
+    "  </DataWindow>",
+    "  <Projection>EPSG:4326</Projection>",
+    "  <BlockSizeX>256</BlockSizeX>",
+    "  <BlockSizeY>256</BlockSizeY>",
+    "  <BandsCount>3</BandsCount>",
+    "  <MaxConnections>10</MaxConnections>",
+    "  <ZeroBlockHttpCodes>404,400</ZeroBlockHttpCodes>",
+    "</GDAL_WMS>",
+  ].join("\n");
+}
 
 // Initialize Openspace Connection
 function initializeOpenSpaceConnection() {
@@ -181,7 +218,7 @@ function submitDate() {
   }
 
   // Point to the local tile server and start at the lowest zoom level
-  baseUrl = "http://localhost:54139/tiles/Tif/Bmng/tile";
+  baseUrl = "http://localhost:57737/tiles/Test-CR/Bmng/tile";
   zoom = 0;
   x = 0;
   y = 0;
@@ -326,19 +363,29 @@ async function updateOpenSpaceForDate(selectedDate) {
     console.warn("Failed to set OpenSpace time:", e);
   }
 
-  // Step 2: Add the tile imagery as a globe overlay layer in OpenSpace
+  // Step 2: Add the tile imagery as a globe overlay layer in OpenSpace.
+  // FilePath receives a GDAL_WMS XML string so OpenSpace fetches tiles
+  // directly from the running tile server over HTTP instead of loading
+  // a local file (the old "earth.tif" approach that caused "file not found").
   try {
-    // Lua script that registers the layer in Earth's Overlays group
-    const lua = `
-      openspace.globebrowsing.addLayer("Earth", "Overlays", {
-      Identifier = "${LAYER_ID}",
-      Name = "Flat Earth",
-      FilePath = "${FILE_PATH}",
-      BlendMode = "Color",
-      Enabled = true,})`;
+    const tileServerUrl =
+      baseUrl || "http://localhost:57737/tiles/Test-CR/Bmng/tile/0/0/0";
+    const gdalXml = buildGdalWmsXml(tileServerUrl, "jpg");
+
+    // Collapse the XML to a single line, then escape every double-quote so
+    // that Lua does not interpret them as the end of the FilePath string value.
+    const xmlOneLine = gdalXml.replace(/\n\s*/g, " ").replace(/"/g, '\\"');
+
+    const lua =
+      `openspace.globebrowsing.addLayer("Earth", "ColorLayers", {` +
+      ` Identifier = "${LAYER_ID}",` +
+      ` Name = "Climate Reanalyzer Tiles",` +
+      ` FilePath = "${xmlOneLine}",` +
+      ` Enabled = true` +
+      ` })`;
 
     await openspaceApi.executeLuaScript(lua, false);
   } catch (e) {
-    console.warn("Failed to display flat earth layer in OpenSpace:", e);
+    console.warn("Failed to display tile layer in OpenSpace:", e);
   }
 }
