@@ -187,7 +187,7 @@ function submitDate() {
   y = 0;
 
   // Open the tile map viewer modal
-  openModal();
+  // openModal();
 
   // Update OpenSpace globe display and simulation time if connected
   if (openspaceApi) {
@@ -214,7 +214,7 @@ function loadSuggestedMap(url, zoomLevel, xCoord, yCoord) {
   x = xCoord;
   y = yCoord;
 
-  openModal();
+  // openModal();
 }
 
 // Shows the tile map viewer modal and refreshes the displayed tile and controls
@@ -281,12 +281,12 @@ function yDecrement() {
 }
 
 // Close modal when clicking outside of it
-window.onclick = function (event) {
-  const modal = document.getElementById("mapModal");
-  if (event.target === modal) {
-    closeModal();
-  }
-};
+// window.onclick = function (event) {
+//   const modal = document.getElementById("mapModal");
+//   if (event.target === modal) {
+//     closeModal();
+//   }
+// };
 
 /**
  * Synchronises the OpenSpace application with the user-selected date.
