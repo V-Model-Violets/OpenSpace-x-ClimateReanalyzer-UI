@@ -29,26 +29,32 @@
         </div>
       </header>
 
+      <div class="subheader">
+        <h2 class="subheader-title">Daily Weather Maps</h2>
+        <div class="subheader-divider"></div>
+      </div>
+
       <main class="content-section">
+        
         <div class="buttons-container">
           <div class="buttons">
             <button
-              onclick="navigateTo('pages/daily-temperature.html')"
+              onclick="navigateTo('pages/temperature.html')"
               class="nav-button featured"
             >
               <span class="button-text">
-                <strong>Daily Temperature</strong>
+                <strong>Temperature</strong>
                 <small>Interactive temperature overlays</small>
               </span>
             </button>
 
             <button
-              onclick="navigateTo('pages/precipitation.html')"
+              onclick="navigateTo('pages/temperature-anomaly.html')"
               class="nav-button"
             >
               <span class="button-text">
-                <strong>Precipitation</strong>
-                <small>Rainfall and weather patterns</small>
+                <strong>Temperature Anomaly</strong>
+                <small>Deviation from average temperature</small>
               </span>
             </button>
 
@@ -63,22 +69,32 @@
             </button>
 
             <button
-              onclick="navigateTo('pages/jetstream.html')"
+              onclick="navigateTo('pages/sst-anomaly.html')"
               class="nav-button"
             >
               <span class="button-text">
-                <strong>Jetstream</strong>
-                <small>Atmospheric wind patterns</small>
+                <strong>SST Anomaly</strong>
+                <small>Deviation from average sea surface temperature</small>
               </span>
             </button>
 
             <button
-              onclick="navigateTo('pages/ice-snow-coverage.html')"
+              onclick="navigateTo('pages/precipitation.html')"
               class="nav-button"
             >
               <span class="button-text">
-                <strong>Ice & Snow Coverage</strong>
-                <small>Polar ice extent data</small>
+                <strong>Precipitation</strong>
+                <small>Rainfall and weather patterns</small>
+              </span>
+            </button>
+
+            <button
+              onclick="navigateTo('pages/wind.html')"
+              class="nav-button"
+            >
+              <span class="button-text">
+                <strong>Wind</strong>
+                <small>Atmospheric wind patterns</small>
               </span>
             </button>
           </div>
