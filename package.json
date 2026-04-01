@@ -2,6 +2,7 @@
   "name": "climate-reanalyzer-ui",
   "private": true,
   "version": "1.0.0",
+  "type": "module",
   "description": "Climate Reanalyzer UI - Plain HTML, CSS, and JavaScript",
   "scripts": {
     "test": "npx playwright test"
