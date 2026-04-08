@@ -175,6 +175,30 @@ body {
   background: var(--gradient-accent);
 }
 
+
+/* Subheader Section */
+.subheader {
+  text-align: center;
+  margin: 20px 0 20px 0;
+}
+
+.subheader-title {
+  font-size: 1.8rem;
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.subheader-divider {
+  width: 60px;
+  height: 3px;
+  margin: 0 auto;
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
 /* Typography */
 .main-title {
   font-size: clamp(2.5rem, 5vw, 4rem);
