@@ -12,18 +12,6 @@ window.addEventListener("DOMContentLoaded", function () {
   initializeOpenSpaceConnection();
 });
 
-// Maximum zoom level supported by the tile server pyramid
-const MAX_ZOOM = 6;
-// Number of tiles in X direction at maximum zoom
-const BASE_TILES_X = 42;
-// Number of tiles in Y direction at maximum zoom
-const BASE_TILES_Y = 21;
-
-// Current tile navigation state
-let zoom = 0; // Active zoom level (0 = most zoomed out, MAX_ZOOM = most zoomed in)
-let x = 0; // Active tile column index
-let y = 0; // Active tile row index
-let baseUrl = null; // Base URL of the currently loaded tile server
 let openspace = null; // OpenSpace Lua library object (populated after API connects)
 let openspaceApi = null; // OpenSpace WebSocket API instance
 
@@ -31,41 +19,67 @@ let openspaceApi = null; // OpenSpace WebSocket API instance
 const LAYER_ID = "EarthOverlay";
 
 /**
- * Builds a GDAL_WMS XML string for a TMS tile server URL.
+ * Maps page filenames (without .html) to their ClimateReanalyzer layer type.
+ * Valid types: mslp | prcp | sst | sst_anom | t2 | t2anom | ws10 | ws500
+ */
+const PAGE_TYPE_MAP = {
+  "daily-temperature": "t2",
+  precipitation: "prcp",
+  "sea-surface-temperature": "sst",
+  jetstream: "ws500",
+  "ice-snow-coverage": "mslp",
+};
+
+/**
+ * Returns the ClimateReanalyzer layer type for the current page,
+ * derived from the HTML filename in window.location.pathname.
+ *
+ * @returns {string}
+ */
+function getPageLayerType() {
+  const filename = window.location.pathname
+    .split("/")
+    .pop()
+    .replace(".html", "");
+  return PAGE_TYPE_MAP[filename] || "t2";
+}
+
+/**
+ * Builds a GDAL_WMS XML string for the ClimateReanalyzer TMS tile server.
  * The ${z}, ${y}, ${x} tokens are left as literal text so GDAL resolves
  * them at render time — they are NOT JavaScript template expressions.
  *
- * @param {string} tileBaseUrl - Base URL of the tile server (no trailing slash).
- * @param {string} format      - File extension without dot, e.g. "jpg" or "png".
+ * @param {string} type - Layer type, e.g. "t2", "prcp", "sst".
+ * @param {string} date - Date in YYYYMMDD format, e.g. "20120315".
  * @returns {string}
  */
-function buildGdalWmsXml(tileBaseUrl, format) {
-  // The server has BASE_TILES_X x BASE_TILES_Y tiles at MAX_ZOOM — not a standard
-  // power-of-2 TMS pyramid.  Hardcode the zoom level in the URL and describe the
-  // grid as a single flat level (TileLevel=0) so GDAL maps the full globe extent
-  // to the exact tile count the server actually provides.
-  const serverUrl = tileBaseUrl + "/" + MAX_ZOOM + "/${y}/${x}." + format;
+function buildGdalWmsXml(type, date) {
+  const serverUrl =
+    "http://mco2.acg.maine.edu/capstone/daily/" +
+    type +
+    "/" +
+    date +
+    "/tile/${z}/${y}/${x}";
   return [
     "<GDAL_WMS>",
     '  <Service name="TMS">',
     "    <ServerUrl>" + serverUrl + "</ServerUrl>",
     "  </Service>",
     "  <DataWindow>",
-    "    <UpperLeftX>-180</UpperLeftX>",
-    "    <UpperLeftY>90</UpperLeftY>",
-    "    <LowerRightX>180</LowerRightX>",
-    "    <LowerRightY>-90</LowerRightY>",
-    "    <TileCountX>" + BASE_TILES_X + "</TileCountX>",
-    "    <TileCountY>" + BASE_TILES_Y + "</TileCountY>",
-    "    <TileLevel>0</TileLevel>",
+    "    <UpperLeftX>-180.0</UpperLeftX>",
+    "    <UpperLeftY>90.0</UpperLeftY>",
+    "    <LowerRightX>180.0</LowerRightX>",
+    "    <LowerRightY>-90.0</LowerRightY>",
+    "    <SizeX>4000</SizeX>",
+    "    <SizeY>2000</SizeY>",
+    "    <TileLevel>3</TileLevel>",
     "    <YOrigin>top</YOrigin>",
     "  </DataWindow>",
     "  <Projection>EPSG:4326</Projection>",
-    "  <BlockSizeX>256</BlockSizeX>",
-    "  <BlockSizeY>256</BlockSizeY>",
+    "  <BlockSizeX>512</BlockSizeX>",
+    "  <BlockSizeY>512</BlockSizeY>",
     "  <BandsCount>3</BandsCount>",
     "  <MaxConnections>10</MaxConnections>",
-    "  <ZeroBlockHttpCodes>404,400</ZeroBlockHttpCodes>",
     "</GDAL_WMS>",
   ].join("\n");
 }
@@ -141,72 +155,8 @@ function goBack() {
 }
 
 /**
- * Returns the maximum valid tile X index for a given zoom level.
- * The tile grid resolution is halved for each step down from MAX_ZOOM.
- *
- * @param {number} zoomLevel
- * @returns {number}
- */
-function getMaxXIndex(zoomLevel) {
-  const divisor = Math.pow(2, MAX_ZOOM - zoomLevel);
-  return Math.ceil(BASE_TILES_X / divisor) - 1;
-}
-
-/**
- * Returns the maximum valid tile Y index for a given zoom level.
- *
- * @param {number} zoomLevel
- * @returns {number}
- */
-function getMaxYIndex(zoomLevel) {
-  const divisor = Math.pow(2, MAX_ZOOM - zoomLevel);
-  return Math.ceil(BASE_TILES_Y / divisor) - 1;
-}
-
-/**
- * Constructs the URL for the tile at the current zoom, x, and y coordinates.
- * Returns null if no base URL has been configured yet.
- *
- * @returns {string|null}
- */
-function getCurrentImageUrl() {
-  if (!baseUrl) return null;
-  return `${baseUrl}/${zoom}/${y}/${x}.jpg`;
-}
-
-/**
- * Refreshes the tile map viewer UI to reflect the current zoom, x, and y state.
- * Updates the displayed tile image, coordinate readouts, and the enabled/disabled
- * state of all navigation buttons.
- */
-function updateMapDisplay() {
-  const imageUrl = getCurrentImageUrl();
-  if (imageUrl) {
-    document.getElementById("mapImage").src = imageUrl;
-    document.getElementById("currentUrl").textContent = imageUrl;
-  }
-
-  // Update coordinates display
-  document.getElementById("zoomLevel").textContent = zoom;
-  document.getElementById("xCoord").textContent = x;
-  document.getElementById("yCoord").textContent = y;
-  document.getElementById("maxX").textContent = getMaxXIndex(zoom);
-  document.getElementById("maxY").textContent = getMaxYIndex(zoom);
-
-  // Update button states
-  document.getElementById("zoomOutBtn").disabled = zoom === 0;
-  document.getElementById("zoomInBtn").disabled = zoom === MAX_ZOOM;
-  document.getElementById("xDecBtn").disabled = x === 0;
-  document.getElementById("xIncBtn").disabled = x === getMaxXIndex(zoom);
-  document.getElementById("yDecBtn").disabled = y === 0;
-  document.getElementById("yIncBtn").disabled = y === getMaxYIndex(zoom);
-}
-
-/**
  * Handles the date submission from the calendar picker.
- * Resets the tile view to the default local tile server and zoom level,
- * opens the map modal, and (if connected) pushes the selected date's time
- * and tile layer to the OpenSpace application.
+ * If connected to OpenSpace, pushes the selected date's time and tile layer.
  */
 function submitDate() {
   const selectedDate = datePicker ? datePicker.getValue() : null;
@@ -217,15 +167,6 @@ function submitDate() {
     return;
   }
 
-  // Point to the local tile server and start at the lowest zoom level
-  baseUrl = "http://localhost:57737/tiles/Test-CR/Bmng/tile";
-  zoom = 0;
-  x = 0;
-  y = 0;
-
-  // Open the tile map viewer modal
-  openModal();
-
   // Update OpenSpace globe display and simulation time if connected
   if (openspaceApi) {
     try {
@@ -235,95 +176,6 @@ function submitDate() {
     }
   }
 }
-
-/**
- * Loads a pre-defined ("suggested") map at a specific tile URL and coordinates,
- * then opens the tile viewer modal. Called by suggested-map buttons in the UI.
- *
- * @param {string} url - Base URL of the tile server to load.
- * @param {number} zoomLevel - Initial zoom level to display.
- * @param {number} xCoord - Initial tile X index.
- * @param {number} yCoord - Initial tile Y index.
- */
-function loadSuggestedMap(url, zoomLevel, xCoord, yCoord) {
-  baseUrl = url;
-  zoom = zoomLevel;
-  x = xCoord;
-  y = yCoord;
-
-  openModal();
-}
-
-// Shows the tile map viewer modal and refreshes the displayed tile and controls
-function openModal() {
-  document.getElementById("mapModal").classList.add("show");
-  updateMapDisplay();
-}
-
-// Hides the tile map viewer modal
-function closeModal() {
-  document.getElementById("mapModal").classList.remove("show");
-}
-
-// Zoom in one level, clamping x/y indices to remain within the new valid range
-function zoomIn() {
-  if (zoom < MAX_ZOOM) {
-    zoom++;
-    x = Math.min(x, getMaxXIndex(zoom));
-    y = Math.min(y, getMaxYIndex(zoom));
-    updateMapDisplay();
-  }
-}
-
-// Zoom out one level, clamping x/y indices to remain within the new valid range
-function zoomOut() {
-  if (zoom > 0) {
-    zoom--;
-    x = Math.min(x, getMaxXIndex(zoom));
-    y = Math.min(y, getMaxYIndex(zoom));
-    updateMapDisplay();
-  }
-}
-
-// Move the tile view one step in the positive X direction (east)
-function xIncrement() {
-  if (x < getMaxXIndex(zoom)) {
-    x++;
-    updateMapDisplay();
-  }
-}
-
-// Move the tile view one step in the negative X direction (west)
-function xDecrement() {
-  if (x > 0) {
-    x--;
-    updateMapDisplay();
-  }
-}
-
-// Move the tile view one step in the positive Y direction (south)
-function yIncrement() {
-  if (y < getMaxYIndex(zoom)) {
-    y++;
-    updateMapDisplay();
-  }
-}
-
-// Move the tile view one step in the negative Y direction (north)
-function yDecrement() {
-  if (y > 0) {
-    y--;
-    updateMapDisplay();
-  }
-}
-
-// Close modal when clicking outside of it
-window.onclick = function (event) {
-  const modal = document.getElementById("mapModal");
-  if (event.target === modal) {
-    closeModal();
-  }
-};
 
 /**
  * Synchronises the OpenSpace application with the user-selected date.
@@ -365,12 +217,10 @@ async function updateOpenSpaceForDate(selectedDate) {
 
   // Step 2: Add the tile imagery as a globe overlay layer in OpenSpace.
   // FilePath receives a GDAL_WMS XML string so OpenSpace fetches tiles
-  // directly from the running tile server over HTTP instead of loading
-  // a local file (the old "earth.tif" approach that caused "file not found").
+  // directly from the ClimateReanalyzer tile server over HTTP.
   try {
-    const tileServerUrl =
-      baseUrl || "http://localhost:57737/tiles/Test-CR/Bmng/tile/0/0/0";
-    const gdalXml = buildGdalWmsXml(tileServerUrl, "jpg");
+    const layerType = getPageLayerType();
+    const gdalXml = buildGdalWmsXml(layerType, "20120315");
 
     // Collapse the XML to a single line, then escape every double-quote so
     // that Lua does not interpret them as the end of the FilePath string value.
