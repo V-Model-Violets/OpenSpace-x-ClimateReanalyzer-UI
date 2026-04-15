@@ -23,11 +23,13 @@ const LAYER_ID = "EarthOverlay";
  * Valid types: mslp | prcp | sst | sst_anom | t2 | t2anom | ws10 | ws500
  */
 const PAGE_TYPE_MAP = {
-  "daily-temperature": "t2",
+  temperature: "t2",
+  "temperature-anomaly": "t2anom",
   precipitation: "prcp",
   "sea-surface-temperature": "sst",
+  "sea-level-pressure": "mslp",
   jetstream: "ws500",
-  "ice-snow-coverage": "mslp",
+  wind: "ws10",
 };
 
 /**
