@@ -1,5 +1,8 @@
 // Search Page JavaScript
 
+// Set to true locally to enable debug mode (shows tile preview and logs WMS XML)
+const DEBUG_MODE = true;
+
 // Initialize date picker on page load
 let datePicker;
 
@@ -175,6 +178,17 @@ function submitDate() {
       console.warn("Failed to update OpenSpace for selected date:", e);
     }
   }
+
+  // Debug mode: log WMS XML and show tile image preview
+  if (DEBUG_MODE) {
+    const layerType = getPageLayerType();
+    const dateStr = "20120315";
+    const wmsXml = buildGdalWmsXml(layerType, dateStr);
+    console.log(
+      "[Debug] WMS XML for " + layerType + " / " + dateStr + ":\n" + wmsXml,
+    );
+    showDebugPreview(layerType, dateStr);
+  }
 }
 
 /**
@@ -189,6 +203,48 @@ function submitDate() {
  *
  * @param {string} selectedDate - ISO date string in "YYYY-MM-DD" format.
  */
+/**
+ * Renders a single full-globe tile (z/y/x = 0/0/0) inside the page for debugging.
+ *
+ * @param {string} layerType - e.g. "t2", "ws10".
+ * @param {string} dateStr   - Date in YYYYMMDD format.
+ */
+function showDebugPreview(layerType, dateStr) {
+  const baseUrl =
+    "http://mco2.acg.maine.edu/capstone/daily/" +
+    layerType +
+    "/" +
+    dateStr +
+    "/tile";
+
+  // z=0, y=0, x=0 — single tile covering the full globe
+  const tilesHtml =
+    '<img src="' +
+    baseUrl +
+    '/0/0/0" alt="tile 0,0,0" style="width:100%;display:block;" />';
+
+  let preview = document.getElementById("debug-preview");
+  if (!preview) {
+    preview = document.createElement("div");
+    preview.id = "debug-preview";
+    preview.style.cssText =
+      "margin: 20px auto; max-width: 800px; padding: 15px;" +
+      " background: rgba(0,0,0,0.4); border-radius: 8px;" +
+      " border: 1px solid rgba(255,255,255,0.2); color: #fff;";
+    const container = document.querySelector(".page-container");
+    if (container) container.appendChild(preview);
+  }
+
+  preview.innerHTML =
+    '<p style="font-family:monospace;font-size:13px;color:#51cf66;margin:0 0 8px 0;">' +
+    "Debug Preview \u2014 " +
+    layerType +
+    " / " +
+    dateStr +
+    "</p>" +
+    tilesHtml;
+}
+
 async function updateOpenSpaceForDate(selectedDate) {
   if (!selectedDate || !openspaceApi) return;
 
