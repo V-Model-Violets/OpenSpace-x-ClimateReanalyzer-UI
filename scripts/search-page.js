@@ -26,11 +26,13 @@ const LAYER_ID = "EarthOverlay";
  * Valid types: mslp | prcp | sst | sst_anom | t2 | t2anom | ws10 | ws500
  */
 const PAGE_TYPE_MAP = {
-  "daily-temperature": "t2",
+  temperature: "t2",
+  "temperature-anomaly": "t2anom",
   precipitation: "prcp",
   "sea-surface-temperature": "sst",
+  "sea-level-pressure": "mslp",
   jetstream: "ws500",
-  "ice-snow-coverage": "mslp",
+  wind: "ws10",
 };
 
 /**
@@ -159,9 +161,10 @@ function goBack() {
 
 /**
  * Handles the date submission from the calendar picker.
- * If connected to OpenSpace, pushes the selected date's time and tile layer.
+ * Probes tile 0/0/0 first; shows an error popup if the date has no data,
+ * then updates OpenSpace if connected.
  */
-function submitDate() {
+async function submitDate() {
   const selectedDate = datePicker ? datePicker.getValue() : null;
 
   // Require a date to be chosen before proceeding
@@ -170,10 +173,39 @@ function submitDate() {
     return;
   }
 
+  // Convert YYYY-MM-DD → YYYYMMDD to match the tile server URL format
+  const dateStr = selectedDate.replace(/-/g, "");
+  const layerType = getPageLayerType();
+
+  // Probe tile 0/0/0 to confirm data exists for this date.
+  // Using an Image avoids any CORS restrictions on a HEAD/GET fetch.
+  const tileUrl =
+    "http://mco2.acg.maine.edu/capstone/daily/" +
+    layerType +
+    "/" +
+    dateStr +
+    "/tile/0/0/0";
+
+  const tileExists = await new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = tileUrl;
+  });
+
+  if (!tileExists) {
+    alert(
+      "No map data available for " +
+        selectedDate +
+        ".\nThe tile server returned no image for this date.",
+    );
+    return;
+  }
+
   // Update OpenSpace globe display and simulation time if connected
   if (openspaceApi) {
     try {
-      updateOpenSpaceForDate(selectedDate);
+      updateOpenSpaceForDate(selectedDate, dateStr);
     } catch (e) {
       console.warn("Failed to update OpenSpace for selected date:", e);
     }
@@ -245,7 +277,7 @@ function showDebugPreview(layerType, dateStr) {
     tilesHtml;
 }
 
-async function updateOpenSpaceForDate(selectedDate) {
+async function updateOpenSpaceForDate(selectedDate, dateStr) {
   if (!selectedDate || !openspaceApi) return;
 
   // Split the date string into its year, month, and day components
@@ -276,7 +308,7 @@ async function updateOpenSpaceForDate(selectedDate) {
   // directly from the ClimateReanalyzer tile server over HTTP.
   try {
     const layerType = getPageLayerType();
-    const gdalXml = buildGdalWmsXml(layerType, "20120315");
+    const gdalXml = buildGdalWmsXml(layerType, dateStr);
 
     // Collapse the XML to a single line, then escape every double-quote so
     // that Lua does not interpret them as the end of the FilePath string value.
