@@ -78,7 +78,7 @@ function buildGdalWmsXml(type, date) {
     "  <Projection>EPSG:4326</Projection>",
     "  <BlockSizeX>512</BlockSizeX>",
     "  <BlockSizeY>512</BlockSizeY>",
-    "  <BandsCount>3</BandsCount>",
+    "  <BandsCount>4</BandsCount>",
     "  <MaxConnections>10</MaxConnections>",
     "</GDAL_WMS>",
   ].join("\n");
