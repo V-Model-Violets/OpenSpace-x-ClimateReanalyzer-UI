@@ -13,13 +13,12 @@ window.addEventListener("DOMContentLoaded", function () {
   });
   // Initialize OpenSpace connection after page loads
   initializeOpenSpaceConnection();
+  // Populate layer select dropdown
+  populateLayerSelect();
 });
 
 let openspace = null; // OpenSpace Lua library object (populated after API connects)
 let openspaceApi = null; // OpenSpace WebSocket API instance
-
-// Identifier used when adding/replacing the globe overlay layer in OpenSpace
-const LAYER_ID = "EarthOverlay";
 
 /**
  * Maps page filenames (without .html) to their ClimateReanalyzer layer type.
@@ -47,6 +46,109 @@ function getPageLayerType() {
     .pop()
     .replace(".html", "");
   return PAGE_TYPE_MAP[filename] || "t2";
+}
+
+/**
+ * Session storage management for tracking which layers have been created in OpenSpace
+ * and their enabled/disabled state. This allows the UI to reflect the current
+ * state of layers across page reloads.
+ */
+function getSessionLayerIds() {
+  try {
+    return JSON.parse(
+      sessionStorage.getItem("openspaceCreatedLayerIds") || "[]",
+    );
+  } catch (e) {
+    console.warn("Failed to parse session layer IDs:", e);
+    return [];
+  }
+}
+
+function saveSessionLayerId(layerId) {
+  const layerIds = getSessionLayerIds();
+  if (!layerIds.includes(layerId)) {
+    layerIds.push(layerId);
+    sessionStorage.setItem(
+      "openspaceCreatedLayerIds",
+      JSON.stringify(layerIds),
+    );
+  }
+}
+
+function getSessionLayerEnabled(layerId) {
+  try {
+    const enabledMap = JSON.parse(
+      sessionStorage.getItem("openspaceLayerEnabled") || "{}",
+    );
+    return enabledMap[layerId] !== false; // Default to true if not set
+  } catch (e) {
+    return true;
+  }
+}
+
+function setSessionLayerEnabled(layerId, enabled) {
+  try {
+    const enabledMap = JSON.parse(
+      sessionStorage.getItem("openspaceLayerEnabled") || "{}",
+    );
+    enabledMap[layerId] = enabled;
+    sessionStorage.setItem("openspaceLayerEnabled", JSON.stringify(enabledMap));
+  } catch (e) {
+    // Ignore
+  }
+}
+/**
+ * Populates the layer selection dropdown with layers that have been created in OpenSpace
+ * and stored in sessionStorage. This allows users to toggle the visibility of previously
+ * added layers across page reloads.
+ */
+function populateLayerSelect() {
+  const select = document.getElementById("layerSelect");
+  if (!select) return;
+
+  // Clear existing options except the first
+  while (select.options.length > 1) {
+    select.remove(1);
+  }
+
+  const layerIds = getSessionLayerIds();
+  layerIds.forEach((layerId) => {
+    const option = document.createElement("option");
+    option.value = layerId;
+    option.textContent = layerId;
+    select.appendChild(option);
+  });
+}
+
+async function toggleLayer() {
+  const select = document.getElementById("layerSelect");
+  if (!select || !openspaceApi) return;
+
+  const layerId = select.value;
+  if (!layerId) {
+    alert("Please select a layer to toggle.");
+    return;
+  }
+
+  try {
+    // Get current enabled state from sessionStorage
+    const isEnabled = getSessionLayerEnabled(layerId);
+    const newEnabled = !isEnabled;
+
+    // Set in OpenSpace
+    const setEnabledScript = `openspace.setPropertyValue("Scene.Earth.Renderable.Layers.ColorLayers.${layerId}.Enabled", ${newEnabled})`;
+    await openspaceApi.executeLuaScript(setEnabledScript, false);
+
+    // Update sessionStorage
+    setSessionLayerEnabled(layerId, newEnabled);
+
+    console.log(
+      `Layer ${layerId} toggled to ${newEnabled ? "enabled" : "disabled"}`,
+    );
+  } catch (e) {
+    console.warn("Failed to toggle layer:", e);
+    alert("Failed to toggle layer. It may not exist.");
+  }
 }
 
 /**
@@ -309,6 +411,7 @@ async function updateOpenSpaceForDate(selectedDate, dateStr) {
   try {
     const layerType = getPageLayerType();
     const gdalXml = buildGdalWmsXml(layerType, dateStr);
+    const layerId = layerType + "_" + dateStr; // Unique ID for this layer instance
 
     // Collapse the XML to a single line, then escape every double-quote so
     // that Lua does not interpret them as the end of the FilePath string value.
@@ -316,13 +419,16 @@ async function updateOpenSpaceForDate(selectedDate, dateStr) {
 
     const lua =
       `openspace.globebrowsing.addLayer("Earth", "ColorLayers", {` +
-      ` Identifier = "${LAYER_ID}",` +
+      ` Identifier = "${layerId}",` +
       ` Name = "Climate Reanalyzer Tiles",` +
       ` FilePath = "${xmlOneLine}",` +
       ` Enabled = true` +
       ` })`;
 
     await openspaceApi.executeLuaScript(lua, false);
+    saveSessionLayerId(layerId);
+    setSessionLayerEnabled(layerId, true);
+    populateLayerSelect();
   } catch (e) {
     console.warn("Failed to display tile layer in OpenSpace:", e);
   }
