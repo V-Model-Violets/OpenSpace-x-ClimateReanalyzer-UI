@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Climate Reanalyzer UI - Plain HTML, CSS, and JavaScript",
   "scripts": {
-    "test": "npx playwright test"
+    "test": "npx playwright test",
+    "test:unit": "node --test tests/unit.test.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",
