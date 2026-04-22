@@ -337,7 +337,7 @@ document.addEventListener("click", () => {
   });
 });
 
-/* OpenSpace does not work with the baseline selector. This is a function to resolve that issue */
+/* OpenSpace does not work with the normal selector we were using. This is the function to resolve that issue */
 function createCustomDropdown(container, items, selectedIndex, onChange) {
   /*ensure base class exists but don't overwrite others*/
   container.classList.add("custom-select");
