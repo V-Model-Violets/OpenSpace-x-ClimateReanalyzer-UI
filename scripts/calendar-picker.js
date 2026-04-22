@@ -65,6 +65,31 @@ class CalendarPicker {
     container.innerHTML = this.generateCalendarHTML();
     this.attachEventListeners();
     this.renderCalendar();
+
+    createCustomDropdown(
+      container.querySelector("#monthSelect"),
+      this.monthNames,
+      this.currentMonth,
+      (index) => {
+        this.currentMonth = index;
+        this.renderCalendar();
+      }
+    );
+
+    const years = Array.from(
+      { length: this.maxYear - this.minYear + 1 },
+      (_, i) => (this.minYear + i).toString()
+    );
+    
+    createCustomDropdown(
+      container.querySelector("#yearSelect"),
+      years,
+      this.currentYear - this.minYear,
+      (index) => {
+        this.currentYear = this.minYear + index;
+        this.renderCalendar();
+      }
+    );
   }
 
   /**
@@ -79,25 +104,8 @@ class CalendarPicker {
       <div class="calendar-header">
         <button class="calendar-nav-btn" id="prevMonth">&lt;</button>
         <div class="calendar-title">
-          <select class="month-select" id="monthSelect">
-            ${this.monthNames
-              .map(
-                (month, index) =>
-                  `<option value="${index}" ${index === this.currentMonth ? "selected" : ""}>${month}</option>`,
-              )
-              .join("")}
-          </select>
-          <select class="year-select" id="yearSelect">
-            ${Array.from(
-              { length: this.maxYear - this.minYear + 1 },
-              (_, i) => this.minYear + i,
-            )
-              .map(
-                (year) =>
-                  `<option value="${year}" ${year === this.currentYear ? "selected" : ""}>${year}</option>`,
-              )
-              .join("")}
-          </select>
+          <div class="custom-select" id="monthSelect"></div>
+          <div class="custom-select" id="yearSelect"></div>
         </div>
         <button class="calendar-nav-btn" id="nextMonth">&gt;</button>
       </div>
@@ -134,16 +142,6 @@ class CalendarPicker {
       .querySelector("#nextMonth")
       .addEventListener("click", () => this.nextMonth());
 
-    // Dropdown selects
-    container.querySelector("#monthSelect").addEventListener("change", (e) => {
-      this.currentMonth = parseInt(e.target.value);
-      this.renderCalendar();
-    });
-
-    container.querySelector("#yearSelect").addEventListener("change", (e) => {
-      this.currentYear = parseInt(e.target.value);
-      this.renderCalendar();
-    });
   }
 
   /**
@@ -185,7 +183,6 @@ class CalendarPicker {
     const yearSelect = document.getElementById("yearSelect");
 
     if (monthSelect) monthSelect.value = this.currentMonth;
-    if (yearSelect) yearSelect.value = this.currentYear;
   }
 
   renderCalendar() {
@@ -331,4 +328,47 @@ function createCalendarPicker(containerId, options = {}) {
   const picker = new CalendarPicker(containerId, options);
   window.calendarPickers[containerId] = picker;
   return picker;
+}
+
+//This makes sure that clicking off drop down makes it dissapear
+document.addEventListener("click", () => {
+  document.querySelectorAll(".custom-select .options").forEach((list) => {
+    list.style.display = "none";
+  });
+});
+
+/* OpenSpace does not work with the baseline selector. This is a function to resolve that issue */
+function createCustomDropdown(container, items, selectedIndex, onChange) {
+  /*ensure base class exists but don't overwrite others*/
+  container.classList.add("custom-select");
+
+  const selected = document.createElement("div");
+  selected.className = "selected";
+  selected.textContent = items[selectedIndex] ?? items[0];
+
+  const list = document.createElement("div");
+  list.className = "options";
+  list.style.display = "none";
+
+  items.forEach((item, index) => {
+    const option = document.createElement("div");
+    option.textContent = item;
+
+    option.addEventListener("click", () => {
+      selected.textContent = item;
+      list.style.display = "none";
+      onChange(index);
+    });
+
+    list.appendChild(option);
+  });
+
+  selected.addEventListener("click", (e) => {
+    e.stopPropagation();
+    list.style.display = list.style.display === "block" ? "none" : "block";
+  });
+
+  container.innerHTML = "";
+  container.appendChild(selected);
+  container.appendChild(list);
 }
