@@ -175,14 +175,29 @@ class CalendarPicker {
   }
 
   /**
-   * Keeps the month and year <select> dropdowns in sync with the current
+   * Keeps the month and year dropdowns in sync with the current
    * internal state after a prev/next navigation button is pressed.
+   * MODIFIED FROM <select> to match the custom we made to integrate with OpenSpac
    */
   updateSelects() {
     const monthSelect = document.getElementById("monthSelect");
     const yearSelect = document.getElementById("yearSelect");
 
-    if (monthSelect) monthSelect.value = this.currentMonth;
+    // Update month label
+    if (monthSelect) {
+      const selected = monthSelect.querySelector(".selected");
+      if (selected) {
+        selected.textContent = this.monthNames[this.currentMonth];
+      }
+    }
+
+    // Update year label
+    if (yearSelect) {
+      const selected = yearSelect.querySelector(".selected");
+      if (selected) {
+        selected.textContent = this.currentYear.toString();
+      }
+    }
   }
 
   renderCalendar() {
