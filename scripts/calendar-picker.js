@@ -369,11 +369,11 @@ function createCustomDropdown(container, items, selectedIndex, onChange) {
   items.forEach((item, index) => {
     const option = document.createElement("div");
     option.textContent = item;
-    container.setAttribute("data-value", index);
 
     option.addEventListener("click", () => {
       selected.textContent = item;
       list.style.display = "none";
+      container.setAttribute("data-value", index);
       onChange(index);
     });
 

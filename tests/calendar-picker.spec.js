@@ -110,7 +110,7 @@ test("previous month wraps from January (0) to December (11) and decrements year
 
 test("changing the month select re-renders day cells", async ({ page }) => {
   // February always has fewer days than July
-  await selectCustomOption(page, "#yearSelect", 2024); // leap year
+  await selectCustomOption(page, "#yearSelect", 2024 - 1900); // leap year || CHANGED TO USE 2024 AS AN INDEX WITH RECENT CHANGES
   await selectCustomOption(page, "#monthSelect", 1); // February
   const febDays = await page.locator(".calendar-day:not(.empty)").count();
   expect(febDays).toBe(29); // 2024 is a leap year
@@ -137,7 +137,7 @@ test("selecting a date returns a YYYY-MM-DD formatted value from getValue()", as
   page,
 }) => {
   await selectCustomOption(page, "#monthSelect", 5); // June (0-indexed)
-  await selectCustomOption(page, "#yearSelect", 2023);
+  await selectCustomOption(page, "#yearSelect", 2023 - 1900); // CHANGED TO USE 2023 AS AN INDEX IN RECENT CHANGES (1900 IS Minimal)
 
   // Click day 15
   await page.locator('.calendar-day:not(.empty):text("15")').click();
