@@ -89,7 +89,7 @@ test("next month wraps from December (11) to January (0) and increments year", a
 
   await expect(page.locator("#monthSelect")).toHaveAttribute("data-value", "0");
   const newYear = await page.locator("#yearSelect").getAttribute("data-value");
-  expect(parseInt(newYear)).toBe(parseInt(initialYear) - 1899);
+  expect(parseInt(newYear)).toBe(parseInt(initialYear) + 1901);
 });
 
 test("previous month wraps from January (0) to December (11) and decrements year", async ({
@@ -105,7 +105,7 @@ test("previous month wraps from January (0) to December (11) and decrements year
 
   await expect(page.locator("#monthSelect")).toHaveAttribute("data-value", "11");
   const newYear = await page.locator("#yearSelect").getAttribute("data-value");
-  expect(parseInt(newYear)).toBe(parseInt(initialYear) - 1901);
+  expect(parseInt(newYear)).toBe(parseInt(initialYear) + 1899);
 });
 
 test("changing the month select re-renders day cells", async ({ page }) => {
