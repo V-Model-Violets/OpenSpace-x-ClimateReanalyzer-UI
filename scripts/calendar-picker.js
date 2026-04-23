@@ -183,20 +183,20 @@ class CalendarPicker {
     const monthSelect = document.getElementById("monthSelect");
     const yearSelect = document.getElementById("yearSelect");
 
-    // Update month label
     if (monthSelect) {
       const selected = monthSelect.querySelector(".selected");
       if (selected) {
         selected.textContent = this.monthNames[this.currentMonth];
       }
+      monthSelect.setAttribute("data-value", this.currentMonth);
     }
 
-    // Update year label
     if (yearSelect) {
       const selected = yearSelect.querySelector(".selected");
       if (selected) {
         selected.textContent = this.currentYear.toString();
       }
+      yearSelect.setAttribute("data-value", this.currentYear.toString());
     }
   }
 
@@ -360,6 +360,7 @@ function createCustomDropdown(container, items, selectedIndex, onChange) {
   const selected = document.createElement("div");
   selected.className = "selected";
   selected.textContent = items[selectedIndex] ?? items[0];
+  container.setAttribute("data-value", selectedIndex);
 
   const list = document.createElement("div");
   list.className = "options";
@@ -368,6 +369,7 @@ function createCustomDropdown(container, items, selectedIndex, onChange) {
   items.forEach((item, index) => {
     const option = document.createElement("div");
     option.textContent = item;
+    container.setAttribute("data-value", index);
 
     option.addEventListener("click", () => {
       selected.textContent = item;
