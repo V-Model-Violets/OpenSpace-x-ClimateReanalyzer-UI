@@ -169,6 +169,17 @@ function populateLayerSelect() {
   document.getElementById("layerDropdownSelected").onclick = () => {
     toggleDropdown(!layerDropdownOpen);
   };
+
+  const selected = document.getElementById("layerDropdownSelected");
+  if (selected) {
+    selected.onclick = () => {
+      toggleDropdown(!layerDropdownOpen);
+    };
+  }
+
+if (selectedLayerId) {
+  setDropdownLabel(selectedLayerId);
+}
 }
 
 // Helper function for populateLayersSelect
@@ -186,19 +197,6 @@ function setDropdownLabel(text) {
   const label = document.getElementById("layerDropdownSelected");
   if (label) {
     label.textContent = `${text} ▼`;
-
-      container.innerHTML = `
-    <div id="layerDropdownSelected" style="
-      padding: 8px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid #555;
-      border-radius: 4px;
-      cursor: pointer;
-      user-select: none;
-    ">
-      ${text} ▼
-    </div>
-  `;
   }
 }
 

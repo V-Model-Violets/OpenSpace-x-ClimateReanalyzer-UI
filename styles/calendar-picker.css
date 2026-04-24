@@ -213,3 +213,9 @@
     transform: translateY(0);
   }
 }
+
+/* this is what makes it so the dropdown options are visible on top of the toggle button*/
+#layerSelectContainer {
+  position: relative;
+  z-index: 1000;
+}
