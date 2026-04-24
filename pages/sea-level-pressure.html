@@ -72,131 +72,17 @@
         <div class="layer-controls">
           <div class="form-group">
             <label for="layerSelect">Select Layer:</label>
-            <select id="layerSelect" class="form-input">
-              <option value="">-- Select a layer --</option>
-            </select>
+            <div id="layerSelectContainer" class="form-input"></div>
           </div>
           <button type="button" onclick="toggleLayer()" class="search-button">
             Toggle Layer
           </button>
         </div>
-      </div>
 
-      <div class="line-1"></div>
-
-      <div style="display: flex; justify-content: center; margin-top: 50px">
-        <h2 class="subtitle">Suggested Maps</h2>
-      </div>
-
-      <!-- Suggested Map 1 -->
-      <div
-        style="
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          margin-top: 25px;
-        "
-      >
-        <h2 class="subtitle">Suggested Map 1:</h2>
-        <button
-          type="button"
-          class="search-button"
-          onclick="
-            loadSuggestedMap(
-              'http://localhost:54139/tiles/Test-CR/Bmng/tile',
-              1,
-              0,
-              0,
-            )
-          "
-          style="margin-top: 15px"
-        >
-          July 22, 2024
-        </button>
-      </div>
-
-      <!-- Suggested Map 2 -->
-      <div
-        style="
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          margin-top: 25px;
-        "
-      >
-        <h2 class="subtitle">Suggested Map 2:</h2>
-        <button
-          type="button"
-          class="search-button"
-          onclick="
-            loadSuggestedMap(
-              'http://localhost:54139/tiles/Test-CR/Bmng/tile',
-              0,
-              0,
-              0,
-            )
-          "
-          style="margin-top: 15px"
-        >
-          July 21, 1983
-        </button>
-      </div>
     </div>
 
-    <!-- Modal -->
-    <div id="mapModal" class="modal">
-      <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
+    <div class="line-1"></div>
 
-        <div class="map-display">
-          <img id="mapImage" class="map-image" alt="Daily temperature map" />
-        </div>
-
-        <div class="map-controls">
-          <div class="map-info">
-            Zoom Level: <span id="zoomLevel">0</span> (Max: 6)
-          </div>
-          <button onclick="zoomOut()" id="zoomOutBtn" class="control-button">
-            Zoom Out (-)
-          </button>
-          <button onclick="zoomIn()" id="zoomInBtn" class="control-button">
-            Zoom In (+)
-          </button>
-        </div>
-
-        <div class="map-controls">
-          <div class="map-info">
-            X Coordinate: <span id="xCoord">0</span> (Max:
-            <span id="maxX">0</span>)
-          </div>
-          <button onclick="xDecrement()" id="xDecBtn" class="control-button">
-            ← X-
-          </button>
-          <button onclick="xIncrement()" id="xIncBtn" class="control-button">
-            X+ →
-          </button>
-        </div>
-
-        <div class="map-controls">
-          <div class="map-info">
-            Y Coordinate: <span id="yCoord">0</span> (Max:
-            <span id="maxY">0</span>)
-          </div>
-          <button onclick="yDecrement()" id="yDecBtn" class="control-button">
-            ↑ Y-
-          </button>
-          <button onclick="yIncrement()" id="yIncBtn" class="control-button">
-            Y+ ↓
-          </button>
-        </div>
-
-        <div
-          class="map-info"
-          style="margin-top: 15px; font-size: 12px; word-break: break-all"
-        >
-          URL: <span id="currentUrl"></span>
-        </div>
-      </div>
     </div>
 
     <script src="../scripts/openspace-api.js"></script>

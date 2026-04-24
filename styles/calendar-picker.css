@@ -48,22 +48,48 @@
   align-items: center;
 }
 
-.month-select,
-.year-select {
+/* Custom dropdown container */
+.custom-select {
+  position: relative;
+  min-width: 110px;
+  font-size: 14px;
+}
+
+/* Visible selected value (acts like the closed select box) */
+.custom-select .selected {
   background: rgba(0, 0, 0, 0.6);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   padding: 6px 8px;
-  font-family: "Inria Serif", serif;
-  font-size: 14px;
   cursor: pointer;
 }
 
-.month-select:focus,
-.year-select:focus {
-  outline: none;
-  border-color: rgba(66, 153, 225, 0.8);
+/* Dropdown list */
+.custom-select .options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  margin-top: 2px;
+  z-index: 9999;  /* Make sure it's on top */
+  max-height: 140px;
+  overflow-y: auto; 
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Individual items */
+.custom-select .options div {
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+/* Hover effect */
+.custom-select .options div:hover {
+  background: rgba(66, 153, 225, 0.4);
 }
 
 .calendar-body {

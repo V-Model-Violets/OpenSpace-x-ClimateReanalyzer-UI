@@ -6,6 +6,12 @@ const DEBUG_MODE = true;
 // Initialize date picker on page load
 let datePicker;
 
+//initialize layer drop down selector on page load
+let layerDropdownOpen = false;
+
+//initialize layer selected
+let selectedLayerId = null;
+
 window.addEventListener("DOMContentLoaded", function () {
   datePicker = createCalendarPicker("dateInput", {
     minYear: 1900,
@@ -103,47 +109,139 @@ function setSessionLayerEnabled(layerId, enabled) {
  * added layers across page reloads.
  */
 function populateLayerSelect() {
-  const select = document.getElementById("layerSelect");
-  if (!select) return;
+  const container = document.getElementById("layerSelectContainer");
+  if (!container) return;
 
-  // Clear existing options except the first
-  while (select.options.length > 1) {
-    select.remove(1);
-  }
-
+  layerDropdownOpen = false
+  container.innerHTML = ""; 
   const layerIds = getSessionLayerIds();
+
+  container.innerHTML = `
+    <div id="layerDropdownSelected" style="
+      padding: 8px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid #555;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+    ">
+      Select Layer ▼
+    </div>
+    <div id="layerDropdownOptions" style="
+      display: none;
+      margin-top: 4px;
+      border: 1px solid #555;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.95);
+      max-height: 200px;
+      overflow-y: auto;
+      position: absolute;
+      z-index: 99999;
+      width: 250px;
+    ">
+    </div>
+  `;
+
+  const optionsDiv = document.getElementById("layerDropdownOptions");
+
   layerIds.forEach((layerId) => {
-    const option = document.createElement("option");
-    option.value = layerId;
-    option.textContent = layerId;
-    select.appendChild(option);
+    const opt = document.createElement("div");
+    opt.textContent = layerId;
+    opt.style.padding = "8px";
+    opt.style.cursor = "pointer";
+    opt.style.borderBottom = "1px solid rgba(255,255,255,0.1)";
+
+    opt.onmouseenter = () => {
+      opt.style.background = "rgba(255,255,255,0.1)";
+    };
+    opt.onmouseleave = () => {
+      opt.style.background = "transparent";
+    };
+
+    opt.onclick = () => {
+      selectLayer(layerId);
+      toggleDropdown(false);
+    };
+
+    optionsDiv.appendChild(opt);
   });
+
+  document.getElementById("layerDropdownSelected").onclick = () => {
+    toggleDropdown(!layerDropdownOpen);
+  };
+}
+
+// Helper function for populateLayersSelect
+function toggleDropdown(forceState) {
+  const options = document.getElementById("layerDropdownOptions");
+  if (!options) return;
+
+  layerDropdownOpen =
+    typeof forceState === "boolean" ? forceState : !layerDropdownOpen;
+
+  options.style.display = layerDropdownOpen ? "block" : "none";
+}
+
+function setDropdownLabel(text) {
+  const label = document.getElementById("layerDropdownSelected");
+  if (label) {
+    label.textContent = `${text} ▼`;
+
+      container.innerHTML = `
+    <div id="layerDropdownSelected" style="
+      padding: 8px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid #555;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+    ">
+      ${text} ▼
+    </div>
+  `;
+  }
+}
+
+function selectLayer(layerId) {
+  selectedLayerId = layerId;
+  console.log("Selected layer:", layerId);
+
+  setDropdownLabel(layerId);
+
+  // Optional UI update elsewhere
+  const label = document.getElementById("selectedLayerLabel");
+  if (label) {
+    label.textContent = layerId;
+  }
 }
 
 async function toggleLayer() {
-  const select = document.getElementById("layerSelect");
-  if (!select || !openspaceApi) return;
+  if (!openspaceApi) return;
 
-  const layerId = select.value;
+  const layerId = selectedLayerId;
+
   if (!layerId) {
-    alert("Please select a layer to toggle.");
+    alert("Please select a layer first.");
     return;
   }
 
   try {
-    // Get current enabled state from sessionStorage
     const isEnabled = getSessionLayerEnabled(layerId);
     const newEnabled = !isEnabled;
 
-    // Set in OpenSpace
-    const setEnabledScript = `openspace.setPropertyValue("Scene.Earth.Renderable.Layers.ColorLayers.${layerId}.Enabled", ${newEnabled})`;
+    const setEnabledScript = `
+      openspace.setPropertyValue(
+        "Scene.Earth.Renderable.Layers.ColorLayers.${layerId}.Enabled",
+        ${newEnabled}
+      )
+    `;
+
     await openspaceApi.executeLuaScript(setEnabledScript, false);
 
-    // Update sessionStorage
     setSessionLayerEnabled(layerId, newEnabled);
 
     console.log(
-      `Layer ${layerId} toggled to ${newEnabled ? "enabled" : "disabled"}`,
+      `Layer ${layerId} toggled to ${newEnabled ? "enabled" : "disabled"}`
     );
   } catch (e) {
     console.warn("Failed to toggle layer:", e);

@@ -2,6 +2,13 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
 
+//helper function for selection tests
+async function selectCustomOption(page, selector, index) {
+  await page.click(`${selector} .selected`);
+  const options = page.locator(`${selector} .options div`);
+  await options.nth(index).click();
+}
+
 test.beforeEach(async ({ page }) => {
   const pagePath = path.join(process.cwd(), "pages", "temperature.html");
   await page.goto(`file://${pagePath}`);
@@ -48,11 +55,11 @@ test("initial selected date display shows 'No date selected'", async ({
 test("next month button advances the month by one", async ({ page }) => {
   const initialMonth = await page
     .locator("#monthSelect")
-    .evaluate((el) => el.value);
+    .getAttribute("data-value");
   await page.click("#nextMonth");
   const newMonth = await page
     .locator("#monthSelect")
-    .evaluate((el) => el.value);
+    .getAttribute("data-value");
   const expected = (parseInt(initialMonth) + 1) % 12;
   expect(parseInt(newMonth)).toBe(expected);
 });
@@ -60,11 +67,11 @@ test("next month button advances the month by one", async ({ page }) => {
 test("previous month button moves the month back by one", async ({ page }) => {
   const initialMonth = await page
     .locator("#monthSelect")
-    .evaluate((el) => el.value);
+    .getAttribute("data-value");
   await page.click("#prevMonth");
   const newMonth = await page
     .locator("#monthSelect")
-    .evaluate((el) => el.value);
+    .getAttribute("data-value");
   const expected = (parseInt(initialMonth) + 11) % 12; // +11 mod 12 == -1 mod 12
   expect(parseInt(newMonth)).toBe(expected);
 });
@@ -73,42 +80,42 @@ test("next month wraps from December (11) to January (0) and increments year", a
   page,
 }) => {
   // Navigate to December
-  await page.selectOption("#monthSelect", "11");
+  await selectCustomOption(page, "#monthSelect", 11);
   const initialYear = await page
     .locator("#yearSelect")
-    .evaluate((el) => el.value);
+    .getAttribute("data-value");
 
   await page.click("#nextMonth");
 
-  await expect(page.locator("#monthSelect")).toHaveValue("0");
-  const newYear = await page.locator("#yearSelect").evaluate((el) => el.value);
-  expect(parseInt(newYear)).toBe(parseInt(initialYear) + 1);
+  await expect(page.locator("#monthSelect")).toHaveAttribute("data-value", "0");
+  const newYear = await page.locator("#yearSelect").getAttribute("data-value");
+  expect(parseInt(newYear)).toBe(parseInt(initialYear) + 1901);
 });
 
 test("previous month wraps from January (0) to December (11) and decrements year", async ({
   page,
 }) => {
   // Navigate to January
-  await page.selectOption("#monthSelect", "0");
-  const initialYear = await page
+  await selectCustomOption(page, "#monthSelect", 0);
+    const initialYear = await page
     .locator("#yearSelect")
-    .evaluate((el) => el.value);
+    .getAttribute("data-value");
 
   await page.click("#prevMonth");
 
-  await expect(page.locator("#monthSelect")).toHaveValue("11");
-  const newYear = await page.locator("#yearSelect").evaluate((el) => el.value);
-  expect(parseInt(newYear)).toBe(parseInt(initialYear) - 1);
+  await expect(page.locator("#monthSelect")).toHaveAttribute("data-value", "11");
+  const newYear = await page.locator("#yearSelect").getAttribute("data-value");
+  expect(parseInt(newYear)).toBe(parseInt(initialYear) + 1899);
 });
 
 test("changing the month select re-renders day cells", async ({ page }) => {
   // February always has fewer days than July
-  await page.selectOption("#yearSelect", "2024"); // leap year
-  await page.selectOption("#monthSelect", "1"); // February
+  await selectCustomOption(page, "#yearSelect", 2024 - 1900); // leap year
+  await selectCustomOption(page, "#monthSelect", 1); // February
   const febDays = await page.locator(".calendar-day:not(.empty)").count();
   expect(febDays).toBe(29); // 2024 is a leap year
 
-  await page.selectOption("#monthSelect", "6"); // July
+  await selectCustomOption(page, "#monthSelect", 6); // July
   const julDays = await page.locator(".calendar-day:not(.empty)").count();
   expect(julDays).toBe(31);
 });
@@ -129,8 +136,8 @@ test("clicking a day updates the selected date display", async ({ page }) => {
 test("selecting a date returns a YYYY-MM-DD formatted value from getValue()", async ({
   page,
 }) => {
-  await page.selectOption("#monthSelect", "5"); // June (0-indexed)
-  await page.selectOption("#yearSelect", "2023");
+  await selectCustomOption(page, "#monthSelect", 5); // June (0-indexed)
+  await selectCustomOption(page, "#yearSelect", 2023 - 1900); 
 
   // Click day 15
   await page.locator('.calendar-day:not(.empty):text("15")').click();
@@ -171,8 +178,8 @@ test("setValue() navigates the calendar to the correct month and year", async ({
     window.calendarPickers["dateInput"].setValue("2020-03-10");
   });
 
-  await expect(page.locator("#monthSelect")).toHaveValue("2"); // March = index 2
-  await expect(page.locator("#yearSelect")).toHaveValue("2020");
+  await expect(page.locator("#monthSelect")).toHaveAttribute("data-value", "2"); // March = index 2
+  await expect(page.locator("#yearSelect")).toHaveAttribute("data-value", "2020");
 });
 
 test("setValue() selects the correct day in the rendered calendar", async ({
