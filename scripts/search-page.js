@@ -362,6 +362,24 @@ function goBack() {
  * Probes tile 0/0/0 first; shows an error popup if the date has no data,
  * then updates OpenSpace if connected.
  */
+
+//this one helps alerts appear within openspace
+function showAlert(message) {
+  const box = document.getElementById("alertBox");
+  if (!box) return;
+
+  box.textContent = message;
+  box.style.display = "block";
+}
+
+//if the map is found, clears any unfound alerts from before
+function hideAlert() {
+  const box = document.getElementById("alertBox");
+  if (!box) return;
+
+  box.style.display = "none";
+}
+
 async function submitDate() {
   const selectedDate = datePicker ? datePicker.getValue() : null;
 
@@ -392,12 +410,11 @@ async function submitDate() {
   });
 
   if (!tileExists) {
-    alert(
-      "No map data available for " +
-        selectedDate +
-        ".\nThe tile server returned no image for this date.",
-    );
+    showAlert(`No map data available for ${selectedDate}`);
     return;
+  }
+  else {
+    hideAlert(); //hides previous alerts if they exist
   }
 
   // Update OpenSpace globe display and simulation time if connected
