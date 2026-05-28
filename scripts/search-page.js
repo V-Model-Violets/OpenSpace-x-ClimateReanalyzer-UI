@@ -426,16 +426,17 @@ async function submitDate() {
     }
   }
 
-  // Debug mode: log WMS XML and show tile image preview
-  if (DEBUG_MODE) {
-    const layerType = getPageLayerType();
-    const dateStr = "20120315";
-    const wmsXml = buildGdalWmsXml(layerType, dateStr);
-    console.log(
-      "[Debug] WMS XML for " + layerType + " / " + dateStr + ":\n" + wmsXml,
-    );
-    showDebugPreview(layerType, dateStr);
-  }
+  //commented out as it is no longer of use to us (V-Model Violets); not deleted in case another user needs it in the future :p
+  // // Debug mode: log WMS XML and show tile image preview
+  // if (DEBUG_MODE) {
+  //   const layerType = getPageLayerType();
+  //   const dateStr = "20120315";
+  //   const wmsXml = buildGdalWmsXml(layerType, dateStr);
+  //   console.log(
+  //     "[Debug] WMS XML for " + layerType + " / " + dateStr + ":\n" + wmsXml,
+  //   );
+  //   showDebugPreview(layerType, dateStr);
+  // }
 }
 
 /**
