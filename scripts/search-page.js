@@ -219,7 +219,7 @@ async function toggleLayer() {
   const layerId = selectedLayerId;
 
   if (!layerId) {
-    alert("Please select a layer first.");
+    showAlert("Please select a layer first.");
     return;
   }
 
@@ -243,7 +243,7 @@ async function toggleLayer() {
     );
   } catch (e) {
     console.warn("Failed to toggle layer:", e);
-    alert("Failed to toggle layer. It may not exist.");
+    showAlert("Failed to toggle layer. It may not exist.");
   }
 }
 
@@ -385,7 +385,7 @@ async function submitDate() {
 
   // Require a date to be chosen before proceeding
   if (!selectedDate) {
-    alert("Please select a date first.");
+    showAlert("Please select a date first.");
     return;
   }
 
