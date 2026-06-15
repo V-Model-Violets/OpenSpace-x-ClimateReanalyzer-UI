@@ -426,6 +426,7 @@ async function submitDate() {
     }
   }
 
+  //Debug Mode
   //commented out as it is no longer of use to us (V-Model Violets); not deleted in case another user needs it in the future :p
   // // Debug mode: log WMS XML and show tile image preview
   // if (DEBUG_MODE) {
